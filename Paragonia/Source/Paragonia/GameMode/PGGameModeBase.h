@@ -53,7 +53,7 @@ protected:
     TMap<int32, TSubclassOf<APawn>> CharacterIDToPawnClass;
 
     UPROPERTY(EditDefaultsOnly, Category = "PG|Loading")
-    int32 RequiredPlayers = 3;
+    int32 RequiredPlayers = 2;
 
     UPROPERTY(EditDefaultsOnly, Category = "PG|Loading")
     float ReadyTimeoutSeconds = 30.f;

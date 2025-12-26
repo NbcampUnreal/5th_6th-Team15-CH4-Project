@@ -10,7 +10,7 @@
 #include "Engine/GameInstance.h"
 
 ALobbyGameModeBase::ALobbyGameModeBase()
-	:PlayerCountToStart(3),
+	:PlayerCountToStart(2),
 	CountdownDuration(5),
 	PlayerIDCounter(0)
 {
