@@ -150,6 +150,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> ToggleShop;
 
+	UPROPERTY()
+	TObjectPtr < UTextureRenderTarget2D> MinimapRT;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
 	TArray<TSubclassOf<UGameplayAbility>> AllAbilities;
 

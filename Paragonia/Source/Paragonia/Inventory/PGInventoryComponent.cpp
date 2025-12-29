@@ -21,6 +21,63 @@ UDataTable* UPGInventoryComponent::GetItemDataTable() const
     return ItemDataTable.IsNull() ? nullptr : ItemDataTable.LoadSynchronous();
 }
 
+FActiveGameplayEffectHandle UPGInventoryComponent::ApplyAllItemStatsToOwner(const FPGShopItemRow& Item)
+{
+    UDataTable* DT = GetItemDataTable();
+    if (!DT)
+    {
+        return FActiveGameplayEffectHandle();
+    }
+
+    FPGShopItemRow* ItemRow = DT->FindRow<FPGShopItemRow>(Item.ItemId, TEXT(""));
+    if (!ItemRow || !ItemRow->EquipmentGE)
+    {
+        return FActiveGameplayEffectHandle();
+    }
+
+    APGPlayerState* PS = Cast<APGPlayerState>(GetOwner());
+    if (!PS)
+    {
+        return FActiveGameplayEffectHandle();
+    }
+
+    APGPlayerCharacterBase* OwningPawn = Cast<APGPlayerCharacterBase>(PS->GetPawn());
+    if (!OwningPawn)
+    {
+        return FActiveGameplayEffectHandle();
+    }
+
+    IAbilitySystemInterface* ASI = Cast<IAbilitySystemInterface>(OwningPawn);
+    UAbilitySystemComponent* ASC = nullptr;
+
+    if (ASI)
+    {
+        ASC = ASI->GetAbilitySystemComponent();
+    }
+    else
+    {
+        ASC = OwningPawn->FindComponentByClass<UAbilitySystemComponent>();
+    }
+
+    if (ASC)
+    {
+        FGameplayEffectContextHandle Context = ASC->MakeEffectContext();
+        FGameplayEffectSpecHandle SpecHandle = ASC->MakeOutgoingSpec(ItemRow->EquipmentGE, 1.0f, Context);
+
+        if (SpecHandle.IsValid())
+        {
+            for (const auto& StatPair : ItemRow->ItemStats)
+            {
+                SpecHandle.Data.Get()->SetSetByCallerMagnitude(StatPair.Key, StatPair.Value);
+            }
+
+            return ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+        }
+    }
+
+    return FActiveGameplayEffectHandle();
+}
+
 void UPGInventoryComponent::BeginPlay()
 {
     Super::BeginPlay();

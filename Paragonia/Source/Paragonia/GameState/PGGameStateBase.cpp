@@ -34,6 +34,11 @@ void APGGameStateBase::StartGameTimer()
 	}
 }
 
+int32 APGGameStateBase::GetCurrentGameTime() const
+{
+	return CurrentGameTime;
+}
+
 void APGGameStateBase::UpdateTimer()
 {
 	CurrentGameTime++;

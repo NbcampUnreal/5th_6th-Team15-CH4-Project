@@ -18,6 +18,9 @@ public:
 
     UPROPERTY(EditDefaultsOnly)
     int32 SpawnCount = 0;
+
+    UPROPERTY(EditDefaultsOnly)
+    int32 StartSpawnTime = 0;
 };
 
 /**

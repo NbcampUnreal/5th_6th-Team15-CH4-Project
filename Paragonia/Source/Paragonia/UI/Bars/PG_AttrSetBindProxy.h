@@ -41,7 +41,12 @@ public:
 
 private:
 
-    UPROPERTY() TObjectPtr<UPG_IngameHUD> HUD;
-    UPROPERTY() TObjectPtr<UCharacterAttributeSet> BoundSet;
+    UPROPERTY() 
+    TObjectPtr<UPG_IngameHUD> HUD;
+
+    UPROPERTY() 
+    TObjectPtr<UCharacterAttributeSet> BoundSet;
+
+    UPROPERTY()
     EHPBarSlot Slot;
 };

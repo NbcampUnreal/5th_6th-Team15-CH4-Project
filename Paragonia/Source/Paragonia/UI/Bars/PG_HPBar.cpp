@@ -10,13 +10,13 @@ void UPG_HPBar::NativeOnInitialized()
 
 }
 
-void UPG_HPBar::HandleHealthChanged(float OldValue, float NewValue)
+float UPG_HPBar::HandleHealthChanged(float OldValue, float NewValue)
 {
 	NowHPValue = NewValue;    
 
     if (MaxHPValue == 0)
     {
-        return;
+        return 0;
     }
 
     float SetOldValue = OldValue / MaxHPValue;
@@ -27,7 +27,7 @@ void UPG_HPBar::HandleHealthChanged(float OldValue, float NewValue)
 
     if (!BarFillMID || !BarGlowMID)
     {
-        return;
+        return 0;
     }
 
     StopAnimation(Damaged);
@@ -41,6 +41,8 @@ void UPG_HPBar::HandleHealthChanged(float OldValue, float NewValue)
     {
         PlayAnimation(Damaged, 0.f, 1, EUMGSequencePlayMode::Forward, 1.f);
     }
+
+    return SetNewValue;
 }
 
 void UPG_HPBar::HandleMaxHealthChanged(float OldValue, float NewValue)

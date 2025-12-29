@@ -7,6 +7,7 @@
 
 DECLARE_MULTICAST_DELEGATE(FOnInventoryChanged);
 
+struct FPGShopItemRow;
 
 USTRUCT(BlueprintType)
 struct FInventorySlot
@@ -49,6 +50,7 @@ public:
     UFUNCTION(BlueprintCallable)
     UDataTable* GetItemDataTable() const;
 
+    FActiveGameplayEffectHandle ApplyAllItemStatsToOwner(const FPGShopItemRow& Item);
 protected:
     virtual void BeginPlay() override;
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;

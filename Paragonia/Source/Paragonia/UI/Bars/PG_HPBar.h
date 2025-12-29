@@ -21,7 +21,7 @@ public:
 	virtual void NativeOnInitialized() override;
 
 	UFUNCTION()
-	void HandleHealthChanged(float OldValue, float NewValue);
+	float HandleHealthChanged(float OldValue, float NewValue);
 
 	UFUNCTION()
 	void HandleMaxHealthChanged(float OldValue, float NewValue);

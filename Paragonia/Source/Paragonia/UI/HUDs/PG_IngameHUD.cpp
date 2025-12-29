@@ -69,14 +69,15 @@ void UPG_IngameHUD::BindSlot(EHPBarSlot InSlot, UCharacterAttributeSet* Set)
 
 void UPG_IngameHUD::HandleHealthChangedBySlot(EHPBarSlot InSlot, float OldValue, float NewValue)
 {
-    if (InSlot == EHPBarSlot::Player && NewValue < OldValue)
-    {
-        PlayAnimation(OnDamaged, 0.f, 1, EUMGSequencePlayMode::Forward, 1.f);
-    }
-
     if (UPG_HPBar* Bar = HPBars.FindRef(InSlot))
     {
-        Bar->HandleHealthChanged(OldValue, NewValue);
+        float Value = Bar->HandleHealthChanged(OldValue, NewValue);
+
+        if (InSlot == EHPBarSlot::Player && Value < 0.3f)
+        {
+            PlayAnimation(OnDamaged, 0.f, 1, EUMGSequencePlayMode::Forward, 1.f);
+        }
+
     }
 }
 

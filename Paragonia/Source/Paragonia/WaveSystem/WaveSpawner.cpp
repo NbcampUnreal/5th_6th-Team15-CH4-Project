@@ -32,16 +32,12 @@ void AWaveSpawner::BeginPlay()
 	// 서버용이지만 추가 체크
 	if (HasAuthority())
 	{
-		UWorld* World = GetWorld();
-		if (IsValid(World))
+		APGGameStateBase* GameState = GetNowWorldGameState();
+		if (IsValid(GameState))
 		{
-			APGGameStateBase* GameState = World->GetGameState<APGGameStateBase>();
-			if (IsValid(GameState))
+			if (GameState->OnGameTimeUpdated.IsAlreadyBound(this, &AWaveSpawner::HandleGameTimeUpdate) == false)
 			{
-				if (GameState->OnGameTimeUpdated.IsAlreadyBound(this, &AWaveSpawner::HandleGameTimeUpdate) == false)
-				{
-					GameState->OnGameTimeUpdated.AddDynamic(this, &AWaveSpawner::HandleGameTimeUpdate);
-				}
+				GameState->OnGameTimeUpdated.AddDynamic(this, &AWaveSpawner::HandleGameTimeUpdate);
 			}
 		}
 	}
@@ -51,14 +47,10 @@ void AWaveSpawner::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	if (HasAuthority())
 	{
-		UWorld* World = GetWorld();
-		if (IsValid(World))
+		APGGameStateBase* GameState = GetNowWorldGameState();
+		if (IsValid(GameState))
 		{
-			APGGameStateBase* GameState = World->GetGameState<APGGameStateBase>();
-			if (IsValid(GameState))
-			{
-				GameState->OnGameTimeUpdated.RemoveDynamic(this, &AWaveSpawner::HandleGameTimeUpdate);
-			}
+			GameState->OnGameTimeUpdated.RemoveDynamic(this, &AWaveSpawner::HandleGameTimeUpdate);
 		}
 	}
 
@@ -76,8 +68,18 @@ void AWaveSpawner::OnWaveStart()
 	SpawnNames.Empty();
 	CurrentSpawnIndex = 0;
 
+	APGGameStateBase* GameState = GetNowWorldGameState();
+	if (IsValid(GameState) == false)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AWaveSpawner::OnWaveStart - APGGameStateBase is not Valid!"));
+		return;
+	}
+
 	for (const FWaveSpawnInfo& Info : CurrentWaveDefinition->WaveSpawnList)
 	{
+		if (GameState->GetCurrentGameTime() < Info.StartSpawnTime)
+			continue;
+
 		if (const FName* FoundRowName = TagToRowMap.Find(Info.SpawnNpcTag))
 		{
 			for (int32 i = 0; i < Info.SpawnCount; i++)
@@ -224,4 +226,14 @@ void AWaveSpawner::SpawnMinion(FName RowName)
 			}
 		}
 	}
+}
+
+APGGameStateBase* AWaveSpawner::GetNowWorldGameState()
+{
+	UWorld* World = GetWorld();
+	if (IsValid(World))
+	{
+		return World->GetGameState<APGGameStateBase>();
+	}
+	return nullptr;
 }

@@ -121,7 +121,7 @@ UTextureRenderTarget2D* APGPlayerCharacterBase::GetMinimapRenderTarget()
 		return nullptr;
 	}
 
-	UTextureRenderTarget2D* MinimapRT = UIComponent->GetMinimapRenderTarget();
+	MinimapRT = UIComponent->GetMinimapRenderTarget();
 
 	if (!MinimapRT)
 	{

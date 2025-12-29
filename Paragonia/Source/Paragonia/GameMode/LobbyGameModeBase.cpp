@@ -45,6 +45,7 @@ void ALobbyGameModeBase::BeginPlay()
     {
         LobbyGS->SetLobbyState(EGameLobbyState::GLS_WaitingForPlayers);
         LobbyGS->SetLeftTime(CountdownDuration);
+		LobbyGS->SetMatchingWaitUserCountMax(PlayerCountToStart);
     }
 }
 

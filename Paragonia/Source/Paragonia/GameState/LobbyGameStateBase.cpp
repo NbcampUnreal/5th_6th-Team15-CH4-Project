@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "GameState/LobbyGameStateBase.h"
@@ -6,7 +6,8 @@
 
 ALobbyGameStateBase::ALobbyGameStateBase()
 	:LeftTime(0),
-	MatchingWaitUserCount(0)
+	MatchingWaitUserCount(0),
+	MatchingWaitUserCountMax(0)
 {
 	CurrentLobbyState = EGameLobbyState::GLS_WaitingForPlayers;
 }
@@ -18,6 +19,7 @@ void ALobbyGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(ThisClass, CurrentLobbyState);
 	DOREPLIFETIME(ThisClass, LeftTime);
 	DOREPLIFETIME(ThisClass, MatchingWaitUserCount);
+	DOREPLIFETIME(ThisClass, MatchingWaitUserCountMax);
 }
 
 void ALobbyGameStateBase::SetLobbyState(EGameLobbyState NewState)
@@ -47,6 +49,14 @@ void ALobbyGameStateBase::SetMatchingWaitUserCount(int32 NewCount)
 	}
 }
 
+void ALobbyGameStateBase::SetMatchingWaitUserCountMax(int32 NewMatchingWaitUserCountMax)
+{
+	if (HasAuthority())
+	{
+		MatchingWaitUserCountMax = NewMatchingWaitUserCountMax;
+	}
+}
+
 void ALobbyGameStateBase::OnRep_CurrentLobbyState()
 {
 	if (OnLobbyGameStateChanged.IsBound())
@@ -68,5 +78,13 @@ void ALobbyGameStateBase::OnRep_MatchWaitCount()
 	if (OnMatchWaitCountChanged.IsBound())
 	{
 		OnMatchWaitCountChanged.Broadcast(MatchingWaitUserCount);
+	}
+}
+
+void ALobbyGameStateBase::OnRep_MatchWaitCountMax()
+{
+	if (OnMatchWaitCountMaxChanged.IsBound())
+	{
+		OnMatchWaitCountMaxChanged.Broadcast(MatchingWaitUserCountMax);
 	}
 }

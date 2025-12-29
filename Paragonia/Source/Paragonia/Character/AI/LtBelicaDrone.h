@@ -18,6 +18,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void CreateBulletEffect();
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void OnDurationOver();
+
 	virtual void PossessedBy(AController* NewController) override;
 
 	void InitAttackData(const FAttackData& InData);

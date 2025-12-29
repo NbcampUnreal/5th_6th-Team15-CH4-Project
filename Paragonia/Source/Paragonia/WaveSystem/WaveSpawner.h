@@ -13,6 +13,7 @@
 
 class UGameplayEffect;
 class UAbilitySystemComponent;
+class APGGameStateBase;
 
 UCLASS()
 class PARAGONIA_API AWaveSpawner : public AActor
@@ -38,6 +39,8 @@ protected:
 	void HandleSpawnTick();
 
 	void SpawnMinion(FName RowName);
+
+	APGGameStateBase* GetNowWorldGameState();
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")

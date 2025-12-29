@@ -85,7 +85,12 @@ protected:
 private:
 	TMap<FGameplayTag, TObjectPtr<UPG_SkillIcon>> CooldownTagToWidget;
 
+	UPROPERTY()
 	TMap<EHPBarSlot, TObjectPtr<UCharacterAttributeSet>> BoundAttrSets;
+
+	UPROPERTY()
 	TMap<EHPBarSlot, TObjectPtr<UPG_HPBar>> HPBars;
+
+	UPROPERTY()
 	TMap<EHPBarSlot, TObjectPtr<UPG_AttrSetBindProxy>> BindProxies;
 };

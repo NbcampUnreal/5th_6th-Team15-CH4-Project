@@ -202,10 +202,17 @@ void UPGShopComponent::GrantItemToOwner(const FPGShopItemRow& Item)
         return;
     }
 
-    const bool bOk = Inv->AddItem(Item.ItemId);
-
-    if (!bOk)
+    if(Item.Category == EShopCategory::Consumable)
     {
-        PS->AddGold(Item.Price);
+		Inv->ApplyAllItemStatsToOwner(Item);
+	}
+    else
+    {
+        const bool bOk = Inv->AddItem(Item.ItemId);
+
+        if (!bOk)
+        {
+            PS->AddGold(Item.Price);
+        }
     }
 }

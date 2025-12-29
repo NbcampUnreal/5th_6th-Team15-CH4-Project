@@ -36,15 +36,19 @@ public:
 
 #pragma region GameTime
 public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_CurrentGameTime, Category = "GameTime")
-	int32 CurrentGameTime;
 
 	UPROPERTY(BlueprintAssignable, Category = "GameTime")
 	FOnGameTimeUpdated OnGameTimeUpdated;
 
 	void StartGameTimer();
 
+	UFUNCTION(BlueprintPure, Category = "GameTime")
+	int32 GetCurrentGameTime() const;
+
 protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_CurrentGameTime, Category = "GameTime")
+	int32 CurrentGameTime;
+
 	FTimerHandle GameTimerHandle;
 
 	void UpdateTimer();

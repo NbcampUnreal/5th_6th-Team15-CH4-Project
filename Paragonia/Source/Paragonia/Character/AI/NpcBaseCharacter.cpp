@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Character/AI/NpcBaseCharacter.h"
@@ -22,6 +22,8 @@ ANpcBaseCharacter::ANpcBaseCharacter()
 	DeathDuration(5.0f)
 {
 	bReplicates = true;
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 
 	SetReplicateMovement(true);
 
@@ -126,6 +128,12 @@ void ANpcBaseCharacter::HandleDeath(AActor* KillerActor)
 {
 	if (HasAuthority())
 	{
+		bool bIsDead = ASC->HasMatchingGameplayTag(DeadTag);
+		if (bIsDead == true)
+		{
+			return;
+		}
+
 		if (IsValid(ASC) == true
 			&& DeadTag.IsValid() == true)
 		{
@@ -157,7 +165,6 @@ void ANpcBaseCharacter::StartDeathEffect()
 {
 	if (HasAuthority())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("StartDeathEffect - Called!"));
 		Multicast_HandleDeath();
 	}
 }
@@ -170,6 +177,14 @@ void ANpcBaseCharacter::Multicast_HandleDeath_Implementation()
 
 		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+
+		GetCapsuleComponent()->SetEnableGravity(false);
+	}
+
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->StopMovementImmediately();
+		GetCharacterMovement()->DisableMovement();
 	}
 
 	USkeletalMeshComponent* MeshComp = GetMesh();
@@ -189,9 +204,12 @@ void ANpcBaseCharacter::Multicast_HandleDeath_Implementation()
 	bIsDissolving = true;
 	DeathAccumulatedTime = 0.0f;
 
+	SetActorTickEnabled(true);
+
 	if (HasAuthority())
 	{
 		SetLifeSpan(DeathDuration + 0.1f);
+		SetAttackTarget(nullptr);
 	}
 }
 
