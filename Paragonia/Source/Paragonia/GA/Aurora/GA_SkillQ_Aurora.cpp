@@ -155,14 +155,20 @@ void UGA_SkillQ_Aurora::OnDashStartEvent(const FGameplayEventData Payload)
 		}
 	}
 
-	if (!HasAuthority(&CurrentActivationInfo))
-	{
-		return;
-	}
-
 	const FVector Forward = Character->GetActorForwardVector();
 	const FVector StartLocation = Character->GetActorLocation();
-	const FVector TargetLocation = StartLocation + Forward * DashDistance;
+	FVector TargetLocation = StartLocation + Forward * DashDistance;
+
+	FHitResult Hit;
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(DashGround), false, Character);
+
+	const FVector TraceStart = TargetLocation + FVector(0, 0, 2000.f);
+	const FVector TraceEnd = TargetLocation - FVector(0, 0, 2000.f);
+
+	if (Character->GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, Params))
+	{
+		TargetLocation.Z = Hit.Location.Z;
+	}
 
 	DashTask = UAbilityTask_ApplyRootMotionMoveToForce::ApplyRootMotionMoveToForce(
 		this,

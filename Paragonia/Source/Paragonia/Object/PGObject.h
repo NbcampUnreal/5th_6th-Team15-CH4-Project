@@ -61,5 +61,5 @@ protected:
 	UPROPERTY(VisibleAnywhere, Replicated, Category = "Life")
 	bool bIsDead = false;
 
-	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

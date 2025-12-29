@@ -17,7 +17,7 @@
 ANpcBaseCharacter::ANpcBaseCharacter()
 	:TeamId(255),
 	MaterialCounts(0),
-	bIsDissolving(false),
+	bIsDead(false),
 	DeathAccumulatedTime(0.0f),
 	DeathDuration(5.0f)
 {
@@ -97,13 +97,14 @@ void ANpcBaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ANpcBaseCharacter, TeamId);
+	DOREPLIFETIME(ANpcBaseCharacter, bIsDead);
 }
 
 void ANpcBaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bIsDissolving)
+	if (bIsDead)
 	{
 		DeathAccumulatedTime += DeltaTime;
 
@@ -119,7 +120,7 @@ void ANpcBaseCharacter::Tick(float DeltaTime)
 
 		if (DeathAccumulatedTime >= DeathDuration)
 		{
-			bIsDissolving = false;
+			bIsDead = false;
 		}
 	}
 }
@@ -128,8 +129,9 @@ void ANpcBaseCharacter::HandleDeath(AActor* KillerActor)
 {
 	if (HasAuthority())
 	{
-		bool bIsDead = ASC->HasMatchingGameplayTag(DeadTag);
-		if (bIsDead == true)
+		bool bAlreadyDead = ASC->HasMatchingGameplayTag(DeadTag);
+		if (bAlreadyDead == true ||
+			bIsDead == true)
 		{
 			return;
 		}
@@ -201,7 +203,7 @@ void ANpcBaseCharacter::Multicast_HandleDeath_Implementation()
 		}
 	}
 
-	bIsDissolving = true;
+	bIsDead = true;
 	DeathAccumulatedTime = 0.0f;
 
 	SetActorTickEnabled(true);
@@ -220,12 +222,7 @@ int32 ANpcBaseCharacter::GetTeamID_Implementation() const
 
 bool ANpcBaseCharacter::GetIsDead_Implementation() const
 {
-	if (IsValid(ASC) == false)
-	{
-		return false;
-	}
-
-	return ASC->HasMatchingGameplayTag(DeadTag);
+	return bIsDead;
 }
 
 void ANpcBaseCharacter::SetTeamId(int32 NewTeamId)
