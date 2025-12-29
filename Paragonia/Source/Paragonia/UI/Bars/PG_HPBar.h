@@ -8,6 +8,7 @@
 
 class UImage;
 class UHorizontalBox;
+class UWidgetAnimation;
 /**
  * 
  */
@@ -28,6 +29,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddBuff(int32 buffUID);
 
+	UFUNCTION(BlueprintCallable)
+	void SetPlayerColor();
+
+	UFUNCTION(BlueprintCallable)
+	void SetTeamColor(int32 TeamType);
+
 protected:
 	UPROPERTY(meta = (BindWidget))    
 	TObjectPtr<UImage> BarFill;
@@ -37,9 +44,6 @@ protected:
 
 	UPROPERTY(Transient, meta = (BindWidgetAnim))
 	TObjectPtr<UWidgetAnimation> Damaged;
-
-	UPROPERTY(Transient, meta = (BindWidgetAnim))
-	TObjectPtr<UWidgetAnimation> Healed;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UHorizontalBox> BuffBox;

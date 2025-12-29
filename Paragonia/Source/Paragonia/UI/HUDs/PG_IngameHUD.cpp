@@ -9,12 +9,83 @@
 #include "Character/PGPlayerCharacterBase.h"
 #include "GameplayTagContainer.h"
 #include "UI/MiniMap/PG_MiniMap.h"
+#include "AttributeSet/CharacterAttributeSet.h"
 
 void UPG_IngameHUD::NativeOnInitialized()
 {
     Super::NativeOnInitialized();
 
+    HPBars.Add(EHPBarSlot::Player, PlayerHPBar);
+    HPBars.Add(EHPBarSlot::Team1,  Team1HPBar->GetTeamHPBar());
+    HPBars.Add(EHPBarSlot::Team2, Team2HPBar->GetTeamHPBar());
+    HPBars.Add(EHPBarSlot::OurNexus, OurNexusHPBar);
+    HPBars.Add(EHPBarSlot::EnemyNexus, EnemyNexusHPBar);
+
 	BindCooldownToSkillIcon();
+}
+
+void UPG_IngameHUD::NativeDestruct()
+{
+    for (auto& Pair : BindProxies)
+    {
+        if (IsValid(Pair.Value))
+        {
+            Pair.Value->Unbind();
+        }
+    }
+    BindProxies.Empty();
+    BoundAttrSets.Empty();
+    HPBars.Empty();
+
+    Super::NativeDestruct();
+}
+
+void UPG_IngameHUD::BindSlot(EHPBarSlot InSlot, UCharacterAttributeSet* Set)
+{
+    BoundAttrSets.FindOrAdd(InSlot) = Set;
+
+    UPG_AttrSetBindProxy* Proxy = BindProxies.FindRef(InSlot);
+    if (!IsValid(Proxy))
+    {
+        Proxy = NewObject<UPG_AttrSetBindProxy>(this);
+        BindProxies.Add(InSlot, Proxy);
+    }
+
+    Proxy->Init(this, InSlot, Set);
+
+    if (UPG_HPBar* Bar = HPBars.FindRef(InSlot))
+    {
+        switch (InSlot)
+        {
+        case EHPBarSlot::Player: Bar->SetPlayerColor(); break;
+        case EHPBarSlot::Team1:  Bar->SetTeamColor(0); break;
+        case EHPBarSlot::Team2:  Bar->SetTeamColor(0); break;
+        case EHPBarSlot::OurNexus:  Bar->SetTeamColor(0); break;
+        case EHPBarSlot::EnemyNexus:  Bar->SetTeamColor(1); break;
+        default: break;
+        }
+    }
+}
+
+void UPG_IngameHUD::HandleHealthChangedBySlot(EHPBarSlot InSlot, float OldValue, float NewValue)
+{
+    if (InSlot == EHPBarSlot::Player && NewValue < OldValue)
+    {
+        PlayAnimation(OnDamaged, 0.f, 1, EUMGSequencePlayMode::Forward, 1.f);
+    }
+
+    if (UPG_HPBar* Bar = HPBars.FindRef(InSlot))
+    {
+        Bar->HandleHealthChanged(OldValue, NewValue);
+    }
+}
+
+void UPG_IngameHUD::HandleMaxHealthChangedBySlot(EHPBarSlot InSlot, float OldValue, float NewValue)
+{
+    if (UPG_HPBar* Bar = HPBars.FindRef(InSlot))
+    {
+        Bar->HandleMaxHealthChanged(OldValue, NewValue);
+    }
 }
 
 void UPG_IngameHUD::InitMinimap(UTextureRenderTarget2D* InRT)
@@ -35,49 +106,6 @@ void UPG_IngameHUD::InitTeam1IngameIcon(int32 CharacterID)
 void UPG_IngameHUD::InitTeam2IngameIcon(int32 CharacterID)
 {
     Team2HPBar->InitTeamSimpleInfo(CharacterID);
-}
-
-void UPG_IngameHUD::HandlePlayerHealthChanged(float OldValue, float NewValue)
-{
-    if (NewValue < OldValue)
-    {
-        //HP 달면 나오는 화면 연출 (image 투명도 조절)
-    }
-    PlayerHPBar->HandleHealthChanged(OldValue, NewValue);
-}
-
-void UPG_IngameHUD::HandlePlayerMaxHealthChanged(float OldValue, float NewValue)
-{
-    PlayerHPBar->HandleMaxHealthChanged(OldValue, NewValue);
-}
-
-void UPG_IngameHUD::HandleTeam1HealthChanged(float OldValue, float NewValue)
-{
-    if (NewValue < OldValue)
-    {
-        //HP 달면 나오는 화면 연출 (팀 HP bar 쉐이킹 하는 애니, 재생 후 원위치)
-    }
-    Team1HPBar->HandleHealthChanged(OldValue, NewValue);
-}
-
-void UPG_IngameHUD::HandleTeam1MaxHealthChanged(float OldValue, float NewValue)
-{
-    Team1HPBar->HandleMaxHealthChanged(OldValue, NewValue);
-}
-
-void UPG_IngameHUD::HandleTeam2HealthChanged(float OldValue, float NewValue)
-{
-    if (NewValue < OldValue)
-    {
-        //HP 달면 나오는 화면 연출 (팀 HP bar 쉐이킹 하는 애니, 재생 후 원위치)
-    }
-
-    Team2HPBar->HandleHealthChanged(OldValue, NewValue);
-}
-
-void UPG_IngameHUD::HandleTeam2MaxHealthChanged(float OldValue, float NewValue)
-{
-    Team2HPBar->HandleMaxHealthChanged(OldValue, NewValue);
 }
 
 void UPG_IngameHUD::HandleCooldownTimeChanged(FGameplayTag CooldownTag, float Remaining, float Duration)

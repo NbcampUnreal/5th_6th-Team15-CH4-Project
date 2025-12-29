@@ -39,3 +39,11 @@ void UPG_InGameTeamSimpleInfo::AddBuff(int32 buffUID)
 		HPBar->AddBuff(buffUID);
 	}
 }
+
+void UPG_InGameTeamSimpleInfo::SetTeamColor()
+{
+	if (HPBar)
+	{
+		HPBar->SetTeamColor(0);
+	}
+}

@@ -27,6 +27,8 @@ public:
 	virtual bool GetIsDead_Implementation() const { return bIsDead; }
 
 	void SetTeamID(int32 NewTeamID) { TeamID = NewTeamID; }
+
+	UCharacterAttributeSet* GetObjectAttributeSet() const { return ObjectAttributeSet; }
 protected:
 	virtual void BeginPlay() override;
 

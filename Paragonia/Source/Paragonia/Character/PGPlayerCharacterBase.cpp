@@ -16,21 +16,18 @@
 #include "PlayerStart/PGPlayerStart.h"
 #include "Controller/PGPlayerController.h"
 #include "Components/WidgetComponent.h"
-#include "UI/Panels/PG_IngameInfo.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "PaperSpriteComponent.h"
-#include "PaperSprite.h"
+#include "Character/PG_PlayerUIComponent.h"
 
 APGPlayerCharacterBase::APGPlayerCharacterBase()
 {
-	PrimaryActorTick.bCanEverTick = true;
-	Accum = 0.f;
+	PrimaryActorTick.bCanEverTick = false;
 
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
-	bHeadHPBound = false;
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
@@ -42,18 +39,6 @@ APGPlayerCharacterBase::APGPlayerCharacterBase()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
-	MiniMapSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("MiniMapSpringArm"));
-	MiniMapSpringArm->SetupAttachment(RootComponent);
-	MiniMapSpringArm->SetRelativeRotation(FRotator(-90.f, 0.f, 0.f));
-	MiniMapSpringArm->TargetArmLength = 1500.0f;
-	MiniMapSpringArm->bUsePawnControlRotation = false;
-
-	MinimapCaptureComponent = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("MinimapCaptureComponent"));
-	MinimapCaptureComponent->SetupAttachment(MiniMapSpringArm, USpringArmComponent::SocketName);
-	MinimapCaptureComponent->bCaptureEveryFrame = false;
-	MinimapCaptureComponent->bCaptureOnMovement = true;
-	MinimapCaptureComponent->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
-
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(RootComponent);
 	SpringArm->TargetArmLength = 400.0f;
@@ -64,30 +49,19 @@ APGPlayerCharacterBase::APGPlayerCharacterBase()
 	FollowCamera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
-	ASC = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("ASC"));
-	ASC->SetIsReplicated(true);
+	MiniMapSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("MiniMapSpringArm"));
+	MiniMapSpringArm->SetupAttachment(RootComponent);
+	MiniMapSpringArm->SetRelativeRotation(FRotator(-90.f, 0.f, 0.f));
+	MiniMapSpringArm->TargetArmLength = 3000.0f;
+	MiniMapSpringArm->bUsePawnControlRotation = false;
+
+	MinimapCaptureComponent = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("MinimapCaptureComponent"));
+	MinimapCaptureComponent->SetupAttachment(MiniMapSpringArm, USpringArmComponent::SocketName);
+	MinimapCaptureComponent->bCaptureEveryFrame = false;
+	MinimapCaptureComponent->bCaptureOnMovement = false;
+	MinimapCaptureComponent->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
+
 	ASC->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
-
-	CharacterAttributeSet = CreateDefaultSubobject<UCharacterAttributeSet>(TEXT("CharacterAttributeSet"));
-
-	HeadHPWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("HeadHPWidgetComp"));
-	HeadHPWidgetComp->SetupAttachment(GetMesh());    
-	HeadHPWidgetComp->SetWidgetSpace(EWidgetSpace::World);
-	HeadHPWidgetComp->SetDrawAtDesiredSize(true);
-	HeadHPWidgetComp->SetRelativeLocation(FVector(0.f, 0.f, 240.f));
-	HeadHPWidgetComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-	MinimapIcon = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("MinimapIcon"));
-	MinimapIcon->SetupAttachment(RootComponent);
-	MinimapIcon->SetRelativeLocation(FVector(0.f, 0.f, 100.f));
-	MinimapIcon->SetRelativeRotation(FRotator(90.f, 0.f, 0.f));
-
-	MinimapIcon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	MinimapIcon->SetGenerateOverlapEvents(false);
-	MinimapIcon->CastShadow = false;
-
-	MinimapIcon->SetVisibleInSceneCaptureOnly(false);
-
 }
 
 void APGPlayerCharacterBase::PossessedBy(AController* NewController)
@@ -108,8 +82,10 @@ void APGPlayerCharacterBase::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 
-	SetupHeadHPWidget();
-	UpdateHeadHPVisibility();
+	if (IsValid(UIComponent))
+	{
+		UIComponent->SetupHeadHPWidget();
+	}
 }
 
 void APGPlayerCharacterBase::OnRep_Controller()
@@ -126,6 +102,11 @@ void APGPlayerCharacterBase::OnRep_Controller()
 	}
 
 	BindCooldownTagEvent();
+
+	if (IsValid(UIComponent))
+	{
+		UIComponent->SetupHeadHPWidget();
+	}
 }
 
 UTextureRenderTarget2D* APGPlayerCharacterBase::GetMinimapRenderTarget()
@@ -134,12 +115,17 @@ UTextureRenderTarget2D* APGPlayerCharacterBase::GetMinimapRenderTarget()
 	{
 		return nullptr;
 	}
+
+	if (!IsValid(UIComponent))
+	{
+		return nullptr;
+	}
+
+	UTextureRenderTarget2D* MinimapRT = UIComponent->GetMinimapRenderTarget();
+
 	if (!MinimapRT)
 	{
-		MinimapRT = NewObject<UTextureRenderTarget2D>(this);
-		MinimapRT->InitAutoFormat(512, 512);
-		MinimapRT->ClearColor = FLinearColor::Black;
-		MinimapRT->UpdateResourceImmediate(true);
+		return nullptr;
 	}
 
 	if (MinimapCaptureComponent)
@@ -147,6 +133,7 @@ UTextureRenderTarget2D* APGPlayerCharacterBase::GetMinimapRenderTarget()
 		MinimapCaptureComponent->TextureTarget = MinimapRT;
 		MinimapCaptureComponent->CaptureScene();
 	}
+
 	return MinimapRT;
 }
 
@@ -154,92 +141,6 @@ void APGPlayerCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (GetNetMode() == NM_DedicatedServer)
-	{
-		return;
-	}
-
-	if (!IsLocallyControlled())
-	{
-		if (MinimapCaptureComponent)
-		{
-			MinimapCaptureComponent->Deactivate();
-			MinimapCaptureComponent->bCaptureOnMovement = false;
-			MinimapCaptureComponent->bCaptureEveryFrame = false;
-		}
-		return;
-	}
-
-	if (MinimapCaptureComponent)
-	{
-		MinimapCaptureComponent->ShowFlags.SetSkeletalMeshes(false);
-		MinimapCaptureComponent->ShowFlags.SetParticles(false);
-
-		MinimapCaptureComponent->MarkRenderStateDirty();
-	}
-}
-
-void APGPlayerCharacterBase::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-
-	if (GetNetMode() == NM_DedicatedServer)
-	{
-		return;
-	}
-
-	Accum += DeltaSeconds;
-	if (Accum < 0.05f)
-	{
-		return;
-	}
-	Accum = 0.f;
-
-	if (!GetMesh()->WasRecentlyRendered(0.2f))
-	{
-		return;
-	}
-
-	if (!HeadHPWidgetComp)
-	{
-		return;
-	}
-
-	if (!IsNetMode(NM_Standalone) && !GetWorld())
-	{
-		return;
-	}
-
-
-	APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	if (!PC)
-	{
-		return;
-	}
-
-	FVector CamLoc;
-	FRotator CamRot;
-	PC->GetPlayerViewPoint(CamLoc, CamRot);
-
-	const FVector WidgetLoc = HeadHPWidgetComp->GetComponentLocation();
-	const FRotator LookRot = (CamLoc - WidgetLoc).Rotation();
-
-	HeadHPWidgetComp->SetWorldRotation(FRotator(0.f, LookRot.Yaw, 0.f));
-}
-
-void APGPlayerCharacterBase::SetMinimapSprite(UPaperSprite* NewSprite)
-{
-	if (!MinimapIcon)
-	{
-		return;
-	}
-
-	MinimapIcon->SetSprite(NewSprite);
-
-	if (IsLocallyControlled() && MinimapCaptureComponent)
-	{
-		MinimapCaptureComponent->CaptureScene();
-	}
 }
 
 void APGPlayerCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -261,6 +162,21 @@ void APGPlayerCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerIn
 		EnhancedInputComponent->BindAction(SkillRAction, ETriggerEvent::Triggered, this, &ThisClass::SkillR);
 
 		EnhancedInputComponent->BindAction(ToggleShop, ETriggerEvent::Started, this, &ThisClass::ToggleShopInput);
+	}
+
+	if (IsValid(UIComponent))
+	{
+		UIComponent->UpdateHeadHPVisibility();
+
+		if (MinimapCaptureComponent)
+		{
+			MinimapCaptureComponent->bCaptureOnMovement = true;
+			MinimapCaptureComponent->bCaptureEveryFrame = false;
+			MinimapCaptureComponent->ShowFlags.SetSkeletalMeshes(false);
+			MinimapCaptureComponent->ShowFlags.SetParticles(false);
+
+			MinimapCaptureComponent->MarkRenderStateDirty();
+		}
 	}
 }
 
@@ -458,6 +374,8 @@ void APGPlayerCharacterBase::InitializeAttributesData()
 		CharacterAttributeSet->InitAttackPower(AttributeData->AttackPower);
 		CharacterAttributeSet->InitMoveSpeed(AttributeData->MoveSpeed);
 		GetCharacterMovement()->MaxWalkSpeed = AttributeData->MoveSpeed;
+
+		CharacterAttributeSet->OutOfHealthChanged.AddDynamic(this, &ThisClass::OnOutOfHealth);
 	}
 	else
 	{
@@ -499,69 +417,6 @@ void APGPlayerCharacterBase::OnAttackPowerChanged(const FOnAttributeChangeData& 
 void APGPlayerCharacterBase::OnMoveSpeedChanged(const FOnAttributeChangeData& Data)
 {
 	GetCharacterMovement()->MaxWalkSpeed = Data.NewValue;
-}
-void APGPlayerCharacterBase::BindHeadHPDelegatesOnce()
-{
-	if (bHeadHPBound)
-	{
-		return;
-	}
-
-	if (!IsValid(CharacterAttributeSet) || !IsValid(HeadHPWidget))
-	{
-		return;
-	}
-
-	CharacterAttributeSet->OnHealthChanged_UI.RemoveDynamic(HeadHPWidget, &UPG_IngameInfo::HandleHealthChanged);
-	CharacterAttributeSet->OnMaxHealthChanged_UI.RemoveDynamic(HeadHPWidget, &UPG_IngameInfo::HandleMaxHealthChanged);
-
-	CharacterAttributeSet->OnHealthChanged_UI.AddDynamic(HeadHPWidget, &UPG_IngameInfo::HandleHealthChanged);
-	CharacterAttributeSet->OnMaxHealthChanged_UI.AddDynamic(HeadHPWidget, &UPG_IngameInfo::HandleMaxHealthChanged);
-
-	HeadHPWidget->HandleMaxHealthChanged(CharacterAttributeSet->GetMaxHealth(), CharacterAttributeSet->GetMaxHealth());
-	HeadHPWidget->HandleHealthChanged(CharacterAttributeSet->GetHealth(), CharacterAttributeSet->GetHealth());
-
-	bHeadHPBound = true;
-}
-
-void APGPlayerCharacterBase::SetupHeadHPWidget()
-{
-	if (!IsValid(HeadHPWidgetComp))
-	{
-		return;
-	}
-	if (!HeadHPWidgetClass)
-	{
-		return;
-	}
-
-	if (HeadHPWidgetComp->GetWidgetClass() != HeadHPWidgetClass)
-	{
-		HeadHPWidgetComp->SetWidgetClass(HeadHPWidgetClass);
-	}
-
-	HeadHPWidgetComp->InitWidget();
-
-	HeadHPWidget = Cast<UPG_IngameInfo>(HeadHPWidgetComp->GetUserWidgetObject());
-
-	if (!IsValid(HeadHPWidget))
-	{
-		return;
-	}
-
-	BindHeadHPDelegatesOnce();
-}
-
-void APGPlayerCharacterBase::UpdateHeadHPVisibility()
-{
-	if (!IsValid(HeadHPWidgetComp))
-	{
-		return;
-	}
-
-	const bool bHide = IsLocallyControlled();
-	HeadHPWidgetComp->SetHiddenInGame(bHide);
-	HeadHPWidgetComp->SetVisibility(!bHide);
 }
 
 void APGPlayerCharacterBase::OnAirborneTagChanged(const FGameplayTag CallbackTag, int32 NewCount)
@@ -662,10 +517,10 @@ bool APGPlayerCharacterBase::GetCooldownRemainingAndDurationByTag(FGameplayTag C
 		return false;
 	}
 
-	FGameplayTagContainer CooldonwTags;
-	CooldonwTags.AddTag(CooldownTag);
+	FGameplayTagContainer CooldownTags;
+	CooldownTags.AddTag(CooldownTag);
 
-	const FGameplayEffectQuery Query = FGameplayEffectQuery::MakeQuery_MatchAnyOwningTags(CooldonwTags);
+	const FGameplayEffectQuery Query = FGameplayEffectQuery::MakeQuery_MatchAnyOwningTags(CooldownTags);
 	const TArray<FActiveGameplayEffectHandle> Handles = ASC->GetActiveEffects(Query);
 	if (Handles.Num() == 0)
 	{
@@ -699,11 +554,6 @@ bool APGPlayerCharacterBase::GetCooldownRemainingAndDurationByTag(FGameplayTag C
 	OutDuration = BestDuration;
 
 	return true;
-}
-
-UAbilitySystemComponent* APGPlayerCharacterBase::GetAbilitySystemComponent() const
-{
-	return ASC;
 }
 
 void APGPlayerCharacterBase::SetSpawningAbilityLock(bool bLock)
@@ -835,6 +685,8 @@ void APGPlayerCharacterBase::OnRep_Dead()
 		{
 			CapsuleComp->SetCollisionProfileName(TEXT("NoCollision"));
 		}
+
+		ClearAllTagsAndEffectOnDeath();
 	}
 	else { // 리스폰
 
@@ -933,10 +785,23 @@ FTransform APGPlayerCharacterBase::GetRespawnLocationForController() const
 
 void APGPlayerCharacterBase::ResetCharacterStateOnRespawn()
 {
-	if (IsValid(CharacterAttributeSet))
+	if (!HasAuthority() || !IsValid(CharacterAttributeSet))
 	{
-		CharacterAttributeSet->SetHealth(CharacterAttributeSet->GetMaxHealth());
+		return;
 	}
+
+	CharacterAttributeSet->SetHealth(CharacterAttributeSet->GetMaxHealth());
+}
+
+void APGPlayerCharacterBase::ClearAllTagsAndEffectOnDeath()
+{
+	if (!HasAuthority() || !IsValid(ASC))
+	{
+		return;
+	}
+
+	ASC->CancelAllAbilities();
+	ASC->RemoveAllGameplayCues();
 }
 
 void APGPlayerCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -944,6 +809,39 @@ void APGPlayerCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(APGPlayerCharacterBase, bIsDead);
+}
+
+void APGPlayerCharacterBase::OnOutOfHealth(AActor* InstigatorActor)
+{
+	if (HasAuthority())
+	{
+		HandlePlayerDeathReward(InstigatorActor);
+	}
+}
+
+void APGPlayerCharacterBase::HandlePlayerDeathReward(AActor* InstigatorActor)
+{
+	APGPlayerState* VictimPS = GetPlayerState<APGPlayerState>();
+	if (!IsValid(VictimPS))
+	{
+		return;
+	}
+	APGPlayerState* KillerPS = nullptr;
+	if (IsValid(InstigatorActor))
+	{
+		if (APGPlayerCharacterBase* KillerChar = Cast<APGPlayerCharacterBase>(InstigatorActor))
+		{
+			KillerPS = KillerChar->GetPlayerState<APGPlayerState>();
+		}
+		else if (APGPlayerController* KillerPC = Cast<APGPlayerController>(InstigatorActor))
+		{
+			KillerPS = KillerPC->GetPlayerState<APGPlayerState>();
+		}
+	}
+	if (IsValid(KillerPS) && KillerPS != VictimPS)
+	{
+		KillerPS->AddGold(RewardGold);
+	}
 }
 
 #pragma endregion

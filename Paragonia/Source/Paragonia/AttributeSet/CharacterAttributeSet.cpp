@@ -61,6 +61,16 @@ void UCharacterAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModC
 			float OldHealth = GetHealth();
 			float NewHealth = FMath::Clamp(OldHealth - LocalDamage, 0.f, GetMaxHealth());
 			SetHealth(NewHealth);
+
+			if (NewHealth <= 0.0f && OldHealth > 0.0f)
+			{
+				AActor* Instigator = Data.EffectSpec.GetContext().GetInstigator();
+
+				if (OutOfHealthChanged.IsBound())
+				{
+					OutOfHealthChanged.Broadcast(Instigator);
+				}
+			}
 		}
 	}
 }

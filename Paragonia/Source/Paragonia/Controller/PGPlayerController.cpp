@@ -5,7 +5,7 @@
 #include "UI/UW_GameResult.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
-#include <GameMode/PGGameModeBase.h>
+#include "GameMode/PGGameModeBase.h"
 #include "Character/PGPlayerCharacterBase.h"
 #include "UI/HUDs/PG_IngameHUD.h"
 #include "AttributeSet/CharacterAttributeSet.h"
@@ -13,6 +13,8 @@
 #include "UI/Shop/PGShopWidget.h"
 #include "Subsystem/PGCharacterDescriptionSubsystem.h"
 #include "Struct/FCharacterResourceInfo.h"
+#include "Object/PGNexus.h"
+#include "EngineUtils.h" 
 
 void APGPlayerController::Client_SetExpectedPlayerCount_Implementation(int32 InExpectedPlayerCount)
 {
@@ -207,6 +209,22 @@ bool APGPlayerController::BindIngameHUD()
         return false;
     }
 
+    for (TActorIterator<APGNexus> It(GetWorld()); It; ++It)
+    {
+        APGNexus* Nexus = *It;
+        if (Nexus && Nexus->ActorHasTag(FName("Nexus")))
+        {
+            if (Nexus->GetNexusTeamID() != LocalPS->GetTeamID())
+            {
+                IngameHUD->BindSlot(EHPBarSlot::EnemyNexus, Nexus->GetObjectAttributeSet());
+            }
+            else
+            {
+                IngameHUD->BindSlot(EHPBarSlot::OurNexus, Nexus->GetObjectAttributeSet());
+            }
+        }
+    }
+
     if (!SetMyHPBar(LocalPS))
     {
         return false;
@@ -240,20 +258,12 @@ bool APGPlayerController::SetMyHPBar(APGPlayerState* LocalPS)
         return false;
     }    
     
-    if (!SetCharacterMinimapIcon(FoundMyCharacter, LocalPS))\
+    if (!SetCharacterMinimapIcon(FoundMyCharacter, LocalPS))
     {
         return false;
     }
 
-    MyAttributeSet->OnHealthChanged_UI.RemoveAll(IngameHUD);
-    MyAttributeSet->OnMaxHealthChanged_UI.RemoveAll(IngameHUD);
-
-    MyAttributeSet->OnHealthChanged_UI.AddDynamic(IngameHUD, &UPG_IngameHUD::HandlePlayerHealthChanged);
-    MyAttributeSet->OnMaxHealthChanged_UI.AddDynamic(IngameHUD, &UPG_IngameHUD::HandlePlayerMaxHealthChanged);
-
-    IngameHUD->HandlePlayerMaxHealthChanged(MyAttributeSet->GetMaxHealth(), MyAttributeSet->GetMaxHealth());
-    IngameHUD->HandlePlayerHealthChanged(MyAttributeSet->GetHealth(), MyAttributeSet->GetHealth());
-
+    IngameHUD->BindSlot(EHPBarSlot::Player, MyAttributeSet);
     IngameHUD->InitMinimap(FoundMyCharacter->GetMinimapRenderTarget());
 
     return true;
@@ -284,7 +294,7 @@ bool APGPlayerController::SetTeamHPBar(const TArray<APlayerState*>& PlayerArray,
             LocalPSTeamId = LocalPS->GetTeamID();
         }
 
-        if (PGPS == LocalPS || PSTeamId != LocalPSTeamId)
+        if (PGPS == LocalPS)
         {
             continue;
         }
@@ -300,6 +310,13 @@ bool APGPlayerController::SetTeamHPBar(const TArray<APlayerState*>& PlayerArray,
             return false;
         }
 
+        FoundCharacter->SetIngameHPBarColor(PSTeamId != LocalPSTeamId);
+
+        if (PSTeamId != LocalPSTeamId)
+        {
+            continue;
+        }
+
         UCharacterAttributeSet* TeamAttributeSet = FoundCharacter->GetCharacterAttributeSet();
 
         if (!IsValid(TeamAttributeSet))
@@ -312,31 +329,15 @@ bool APGPlayerController::SetTeamHPBar(const TArray<APlayerState*>& PlayerArray,
             return false;
         }
 
-        TeamAttributeSet->OnHealthChanged_UI.RemoveAll(IngameHUD);
-        TeamAttributeSet->OnMaxHealthChanged_UI.RemoveAll(IngameHUD);
-
         switch (index)
         {
         case 0:
-
+            IngameHUD->BindSlot(EHPBarSlot::Team1, TeamAttributeSet);
             IngameHUD->InitTeam1IngameIcon(PGPS->GetCharID());
-
-            TeamAttributeSet->OnHealthChanged_UI.AddDynamic(IngameHUD, &UPG_IngameHUD::HandleTeam1HealthChanged);
-            TeamAttributeSet->OnMaxHealthChanged_UI.AddDynamic(IngameHUD, &UPG_IngameHUD::HandleTeam1MaxHealthChanged);
-
-            IngameHUD->HandleTeam1MaxHealthChanged(TeamAttributeSet->GetMaxHealth(), TeamAttributeSet->GetMaxHealth());
-            IngameHUD->HandleTeam1HealthChanged(TeamAttributeSet->GetHealth(), TeamAttributeSet->GetHealth());
-
             break;
         default:
-
+            IngameHUD->BindSlot(EHPBarSlot::Team2, TeamAttributeSet);
             IngameHUD->InitTeam2IngameIcon(PGPS->GetCharID());
-
-            TeamAttributeSet->OnHealthChanged_UI.AddDynamic(IngameHUD, &UPG_IngameHUD::HandleTeam2HealthChanged);
-            TeamAttributeSet->OnMaxHealthChanged_UI.AddDynamic(IngameHUD, &UPG_IngameHUD::HandleTeam2MaxHealthChanged);
-
-            IngameHUD->HandleTeam2MaxHealthChanged(TeamAttributeSet->GetMaxHealth(), TeamAttributeSet->GetMaxHealth());
-            IngameHUD->HandleTeam2HealthChanged(TeamAttributeSet->GetHealth(), TeamAttributeSet->GetHealth());
             break;
         }
 

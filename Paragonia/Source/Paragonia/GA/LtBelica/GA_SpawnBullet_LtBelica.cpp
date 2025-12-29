@@ -1,6 +1,7 @@
 #include "GA/LtBelica/GA_SpawnBullet_LtBelica.h"
 
 #include "Character/PGPlayerCharacterBase.h"
+#include "Character/AI/LtBelicaDrone.h"
 #include "TargetActor/PGTargetActor.h"
 #include "Struct/BulletDataWrapper.h"
 #include "Bullet/PGTaskRelatedBullet.h"
@@ -86,6 +87,17 @@ void UGA_SpawnBullet_LtBelica::ActivateAbility(const FGameplayAbilitySpecHandle 
 	if (IsValid(CreatingBullet))
 	{
 		CreatingBullet->InitBullet(CurrentAttackData);
+	}
+
+	ALtBelicaDrone* Drone = Cast<ALtBelicaDrone>(NewBullet);
+	if (IsValid(Drone))
+	{
+		APGPlayerCharacterBase* Player = Cast<APGPlayerCharacterBase>(Character);
+		if (IsValid(Player))
+		{
+			Drone->SetTeamId(IPGTeamStatusInterface::Execute_GetTeamID(Player));
+		}
+		Drone->InitAttackData(CurrentAttackData);
 	}
 
 	EndAbility(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), GetCurrentActivationInfo(), true, false);

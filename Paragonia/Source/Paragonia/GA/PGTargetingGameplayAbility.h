@@ -55,6 +55,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Task")
 	FName TargetingEndtMontageSectionName;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Task")
+	bool bUseHitResult;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Spawn")
 	bool bIsUseSocket;
 
@@ -71,5 +74,4 @@ protected:
 	TSubclassOf<AActor> EffectActorClass;
 
 	TObjectPtr<UAbilityTask_PlayMontageAndWait> MontageTask;
-	
 };

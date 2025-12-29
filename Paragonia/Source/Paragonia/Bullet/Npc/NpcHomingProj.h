@@ -9,6 +9,7 @@
 
 class USphereComponent;
 class UProjectileMovementComponent;
+class UParticleSystemComponent;
 
 UCLASS()
 class PARAGONIA_API ANpcHomingProj : public AActor
@@ -44,6 +45,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UProjectileMovementComponent> MovementComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UParticleSystemComponent> TrailFXComp;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Time|Life")
 	float MaxLifeTime;

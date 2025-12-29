@@ -2,6 +2,7 @@
 
 #include "Bullet/PGMultiBulletCreator.h"
 #include "GA/Sparrow/GA_SpawnBullet_Sparrow.h"
+#include "Interface/PGTeamStatusInterface.h"
 
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -66,12 +67,18 @@ void APGNormalBullet_Sparrow::OnBeginOverlap(
 	}
 	else
 	{
-		if (UAbilitySystemComponent* ASC = OtherActor->GetComponentByClass<UAbilitySystemComponent>())
+		if (OtherActor->GetClass()->ImplementsInterface(UPGTeamStatusInterface::StaticClass()))
 		{
-			HitCheckNotify();
-			if (!bIsPierce)
+			int32 OwnerTeamID = IPGTeamStatusInterface::Execute_GetTeamID(Owner);
+			int32 TargetTeamID = IPGTeamStatusInterface::Execute_GetTeamID(OtherActor);
+
+			if (OwnerTeamID != TargetTeamID)
 			{
-				Destroy();
+				HitCheckNotify();
+				if (!bIsPierce)
+				{
+					Destroy();
+				}
 			}
 		}
 		else

@@ -12,6 +12,7 @@
 #include "Object/PGNexus.h"
 #include "Character/PGPlayerCharacterBase.h"
 #include "PlayerStart/PGPlayerStart.h"
+#include "Subsystem/ConnectSubsystem.h"
 
 APGGameModeBase::APGGameModeBase()
 {
@@ -411,6 +412,8 @@ void APGGameModeBase::OnObjectiveDestroyed(AActor* DestroyedActor)
         return;
     }
 
+    bool bGameOver = true;
+
     if (DestroyedActor->ActorHasTag("Team1Nexus"))
     {
         GS->TeamResult = ETeamResult::Team2Win;
@@ -419,7 +422,30 @@ void APGGameModeBase::OnObjectiveDestroyed(AActor* DestroyedActor)
     {
         GS->TeamResult = ETeamResult::Team1Win;
     }
+    else
+    {
+        bGameOver = false;
+    }
+
+    GetWorld()->GetTimerManager().SetTimer(
+        EndGameTimerHandle,
+        this,
+        &APGGameModeBase::ReturnToLobby,
+        ReturnLobbyTime,
+        false
+    );
 }
 
-
+void APGGameModeBase::ReturnToLobby()
+{
+    UGameInstance* GI = GetGameInstance();
+    if (IsValid(GI) == true)
+    {
+        UConnectSubsystem* ConnectSubsystem = GI->GetSubsystem<UConnectSubsystem>();
+        if (IsValid(ConnectSubsystem) == true)
+        {
+            ConnectSubsystem->TravelToLobby();
+        }
+    }
+}
 #pragma endregion EndGame

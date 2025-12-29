@@ -9,6 +9,7 @@
 #include "Abilities/GameplayAbilityTargetTypes.h"
 #include "Net/UnrealNetwork.h"
 #include "Interface/PGTeamStatusInterface.h"
+#include "Particles/ParticleSystemComponent.h"
 
 ANpcHomingProj::ANpcHomingProj()
 	:MaxLifeTime(10.0f),
@@ -26,6 +27,9 @@ ANpcHomingProj::ANpcHomingProj()
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetupAttachment(SphereComp);
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	TrailFXComp = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("TrailFXComp"));
+	TrailFXComp->SetupAttachment(MeshComp);
 
 	MovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("MovementComp"));
 	MovementComp->InitialSpeed = 0.0f;

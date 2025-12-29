@@ -6,6 +6,7 @@
 #include "CharacterAttributeSet.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FAttributeDataChanged, float, OldValue, float, NewValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOutOfHealthChanged, AActor*, Instigator);
 
 UCLASS()
 class PARAGONIA_API UCharacterAttributeSet : public UAttributeSet
@@ -41,6 +42,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Attribute")
 	mutable FAttributeDataChanged OnHealthChanged_UI;
+
+	UPROPERTY(BlueprintAssignable, Category = "Attribute")
+	mutable FOutOfHealthChanged OutOfHealthChanged;
 
 private:
 	UFUNCTION()

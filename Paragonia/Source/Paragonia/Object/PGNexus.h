@@ -21,6 +21,8 @@ class PARAGONIA_API APGNexus : public APGObject
 public:
 	APGNexus();
 
+	int32 GetNexusTeamID() const { return TeamID; }
+
 protected:
 	virtual void BeginPlay() override;
 	

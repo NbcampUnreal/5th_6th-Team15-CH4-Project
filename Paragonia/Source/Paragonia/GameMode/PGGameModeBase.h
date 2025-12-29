@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
@@ -112,6 +112,16 @@ protected:
     bool bIsGameWin;
 
 
+#pragma endregion
+
+#pragma region ReturnLobby
+protected:
+    FTimerHandle EndGameTimerHandle;
+
+    void ReturnToLobby();
+
+    UPROPERTY(EditDefaultsOnly, Category = "PG|Lobby")
+    float ReturnLobbyTime = 5.f;
 #pragma endregion
 
 };

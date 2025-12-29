@@ -1,11 +1,9 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
-#include "AbilitySystemInterface.h"
+#include "Character/PGCharacterBase.h"
 #include "Struct/FAttackData.h"
 #include "GameplayTagContainer.h"
-#include "Interface/PGTeamStatusInterface.h"
 #include "PGPlayerCharacterBase.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCooldownTagChanged, FGameplayTag, CooldownTag, int32, NewCount);
@@ -23,18 +21,17 @@ class UPG_IngameInfo;
 class USceneCaptureComponent2D; 
 class UPaperSpriteComponent;
 class UPaperSprite;
+class UPG_PlayerUIComponent;
 struct FInputActionValue;
 struct FOnAttributeChangeData;
 
 UCLASS()
-class PARAGONIA_API APGPlayerCharacterBase : public ACharacter, public IAbilitySystemInterface, public IPGTeamStatusInterface
+class PARAGONIA_API APGPlayerCharacterBase : public APGCharacterBase
 {
 	GENERATED_BODY()
 
 public:
 	APGPlayerCharacterBase();
-
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	UFUNCTION(Client, Reliable)
 	void DrawDebugAttackCollision(const FColor& DrawColor, FVector TraceStart, FVector TraceEnd, FVector Forward, const FAttackData& AttackData);
@@ -48,18 +45,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Cooldown")
     bool GetCooldownRemainingAndDurationByTag(FGameplayTag CooldownTag, float& OutRemaining, float& OutDuration) const;
 
-	UFUNCTION(BlueprintCallable)
-	UCharacterAttributeSet* GetCharacterAttributeSet() const { return CharacterAttributeSet; }
-
-	UFUNCTION(BlueprintCallable)
-	void SetMinimapSprite(UPaperSprite* NewSprite);
-
 	UTextureRenderTarget2D* GetMinimapRenderTarget();
 
 protected:
 	virtual void BeginPlay() override;
-
-	virtual void Tick(float DeltaSeconds) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -109,12 +98,6 @@ private:
 
 	void OnMoveSpeedChanged(const FOnAttributeChangeData& Data);
 
-	void BindHeadHPDelegatesOnce();
-
-	void SetupHeadHPWidget();
-
-	void UpdateHeadHPVisibility();
-
 	void OnAirborneTagChanged(const FGameplayTag CallbackTag, int32 NewCount);
 
 	void BindCooldownTagEvent();
@@ -142,12 +125,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UCameraComponent> FollowCamera;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GAS")
-	TObjectPtr<UAbilitySystemComponent> ASC;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attribute")
-	TObjectPtr<UCharacterAttributeSet> CharacterAttributeSet;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> MoveAction;
@@ -179,29 +156,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data")
 	FName CharacterName;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-	TObjectPtr<UWidgetComponent> HeadHPWidgetComp;
-
-	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TSubclassOf<UPG_IngameInfo> HeadHPWidgetClass;
-
-	UPROPERTY()
-	TObjectPtr<UPG_IngameInfo> HeadHPWidget;
-
-	UPROPERTY()
-	TObjectPtr<UTextureRenderTarget2D> MinimapRT;
-
-	UPROPERTY()
-	TObjectPtr<UPaperSpriteComponent> MinimapIcon;
 
 private:
 	bool bInputLock;
 
-	bool bHeadHPBound;
-
 	TMap<FGameplayTag, FTimerHandle> CooldownTickTimerHandles;
-
-	float Accum;
 #pragma region Respawn
 public:
 	UFUNCTION(Server, Reliable)
@@ -209,6 +168,11 @@ public:
 
 	UFUNCTION()
 	void SetDeadState(bool bDead); 
+
+	UFUNCTION()
+	void OnOutOfHealth(AActor* InstigatorActor);
+
+	void HandlePlayerDeathReward(AActor* InstigatorActor);
 
 	virtual int32 GetTeamID_Implementation() const override; 
 	virtual bool GetIsDead_Implementation() const { return bIsDead; }
@@ -227,9 +191,14 @@ protected:
 
 	void ResetCharacterStateOnRespawn();
 
+	void ClearAllTagsAndEffectOnDeath();
+
 protected:
 	UPROPERTY(ReplicatedUsing = OnRep_Dead)
 	bool bIsDead;
+
+	UPROPERTY(EditAnywhere)
+	int32 RewardGold = 100;
 #pragma endregion
 
 };

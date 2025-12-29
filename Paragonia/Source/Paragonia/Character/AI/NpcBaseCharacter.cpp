@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Character/AI/NpcBaseCharacter.h"
@@ -11,7 +11,8 @@
 #include "GameFramework/PlayerController.h"
 #include "PlayerState/PGPlayerState.h"
 #include "AIController.h"
-#include <Kismet/KismetMathLibrary.h>
+#include "Kismet/KismetMathLibrary.h"
+#include "Character/PG_PlayerUIComponent.h"
 
 ANpcBaseCharacter::ANpcBaseCharacter()
 	:TeamId(255),
@@ -30,13 +31,6 @@ ANpcBaseCharacter::ANpcBaseCharacter()
 	GetCharacterMovement()->bUseRVOAvoidance = true;
 	GetCharacterMovement()->AvoidanceConsiderationRadius = 150.0f;
 
-	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
-	// Minimal : GameplayCue 와 Tag만 복제
-	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
-	AbilitySystemComponent->SetIsReplicated(true);
-
-	AttributeSet = CreateDefaultSubobject<UCharacterAttributeSet>(TEXT("AttributeSet"));
-
 	StateTreeComponent = CreateDefaultSubobject<UStateTreeComponent>(TEXT("StateTreeComponent"));
 	StateTreeComponent->SetAutoActivate(true);
 
@@ -44,9 +38,29 @@ ANpcBaseCharacter::ANpcBaseCharacter()
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
-UAbilitySystemComponent* ANpcBaseCharacter::GetAbilitySystemComponent() const
+void ANpcBaseCharacter::BeginPlay()
 {
-	return AbilitySystemComponent;
+	Super::BeginPlay();
+
+	if (TeamId != 255)
+	{
+		APlayerController* LocalPC = UGameplayStatics::GetPlayerController(this, 0);
+		if (LocalPC == nullptr)
+		{
+			return;
+		}
+
+		APGPlayerState* PS = LocalPC->GetPlayerState<APGPlayerState>();
+		if (!IsValid(PS))
+		{
+			return;
+		}
+
+		if (IsValid(UIComponent))
+		{
+			UIComponent->SetHPBarColor(TeamId != PS->GetTeamID());
+		}
+	}
 }
 
 void ANpcBaseCharacter::PossessedBy(AController* NewController)
@@ -58,13 +72,15 @@ void ANpcBaseCharacter::PossessedBy(AController* NewController)
 		StateTreeComponent->StartLogic();
 	}
 
-	if (AbilitySystemComponent)
+	if (ASC)
 	{
-		AbilitySystemComponent->InitAbilityActorInfo(this, this);
+		ASC->InitAbilityActorInfo(this, this);
 
-		if (AttributeSet)
+		if (CharacterAttributeSet)
 		{
-			AttributeSet->OnHealthChanged.AddDynamic(this, &ANpcBaseCharacter::OnHealthChanged);
+			CharacterAttributeSet->OnHealthChanged.AddDynamic(this, &ANpcBaseCharacter::OnHealthChanged);
+
+			CharacterAttributeSet->OutOfHealthChanged.AddDynamic(this, &ANpcBaseCharacter::OnOutOfHealth);
 		}
 
 		if (HasAuthority())
@@ -106,19 +122,33 @@ void ANpcBaseCharacter::Tick(float DeltaTime)
 	}
 }
 
-void ANpcBaseCharacter::HandleDeath()
+void ANpcBaseCharacter::HandleDeath(AActor* KillerActor)
 {
 	if (HasAuthority())
 	{
-		if (IsValid(AbilitySystemComponent) == true
+		if (IsValid(ASC) == true
 			&& DeadTag.IsValid() == true)
 		{
-			AbilitySystemComponent->AddLooseGameplayTag(DeadTag);
+			ASC->AddLooseGameplayTag(DeadTag);
 		}
 
 		if (StateTreeComponent)
 		{
 			StateTreeComponent->SendStateTreeEvent(FStateTreeEvent(DeadTag));
+		}
+
+		if (KillerActor)
+		{
+			APawn* KillerPawn = Cast<APawn>(KillerActor);
+			if (KillerPawn)
+			{
+				if (APGPlayerState* KillerPS = KillerPawn->GetPlayerState<APGPlayerState>())
+				{
+					KillerPS->AddGold(RewardGoldAmount);
+
+					UE_LOG(LogTemp, Log, TEXT("Npc killed by %s. Gave %d Gold."), *KillerPS->GetPlayerName(), RewardGoldAmount);
+				}
+			}
 		}
 	}
 }
@@ -172,12 +202,12 @@ int32 ANpcBaseCharacter::GetTeamID_Implementation() const
 
 bool ANpcBaseCharacter::GetIsDead_Implementation() const
 {
-	if (IsValid(AbilitySystemComponent) == false)
+	if (IsValid(ASC) == false)
 	{
 		return false;
 	}
 
-	return AbilitySystemComponent->HasMatchingGameplayTag(DeadTag);
+	return ASC->HasMatchingGameplayTag(DeadTag);
 }
 
 void ANpcBaseCharacter::SetTeamId(int32 NewTeamId)
@@ -252,7 +282,7 @@ void ANpcBaseCharacter::SetRotationToTarget(AActor* TargetActor)
 
 void ANpcBaseCharacter::GrantStartupAbilities()
 {
-	if (IsValid(AbilitySystemComponent) == false)
+	if (IsValid(ASC) == false)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("ANpcBaseCharacter::GrantStartupAbilities - ASC is Not Valid!"));
 		return;
@@ -267,17 +297,17 @@ void ANpcBaseCharacter::GrantStartupAbilities()
 	for (TSubclassOf<UGameplayAbility> AbilityClass : StartupAbilities)
 	{
 		FGameplayAbilitySpec Spec(AbilityClass, 1);
-		AbilitySystemComponent->GiveAbility(Spec);
+		ASC->GiveAbility(Spec);
 	}
 }
 
 void ANpcBaseCharacter::OnHealthChanged(float OldValue, float NewValue)
 {
-	if (NewValue <= 0.0f &&
+	/*if (NewValue <= 0.0f &&
 		OldValue > 0.0f)
 	{
 		HandleDeath();
-	}
+	}*/
 }
 
 void ANpcBaseCharacter::OnRep_TeamId()
@@ -299,6 +329,10 @@ void ANpcBaseCharacter::OnRep_TeamId()
 			MyTeamId = PS->GetTeamID();
 		}
 	}
+	if (IsValid(UIComponent))
+	{
+		UIComponent->SetHPBarColor(TeamId != MyTeamId);
+	}
 
 	if (TeamId == MyTeamId)
 	{
@@ -317,4 +351,9 @@ void ANpcBaseCharacter::OnRep_TeamId()
 			GetMesh()->SetSkeletalMeshAsset(MeshToUse);
 		}
 	}
+}
+
+void ANpcBaseCharacter::OnOutOfHealth(AActor* InstigatorActor)
+{
+	HandleDeath(InstigatorActor);
 }
