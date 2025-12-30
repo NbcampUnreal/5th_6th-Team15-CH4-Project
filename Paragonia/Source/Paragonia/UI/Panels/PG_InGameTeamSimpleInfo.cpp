@@ -16,6 +16,17 @@ void UPG_InGameTeamSimpleInfo::InitTeamSimpleInfo(int32 CharacterID)
 	}
 }
 
+void UPG_InGameTeamSimpleInfo::InitTeamSimpleInfo(int32 CharacterID, const FString& PlayerName)
+{
+	SetVisibility(ESlateVisibility::HitTestInvisible);
+	if (PlayerIcon)
+	{
+		PlayerIcon->SetPlayerIcon(CharacterID);
+		PlayerIcon->SetPlayerNameText(PlayerName);
+		PlayerIcon->ApplyIcon();
+	}
+}
+
 void UPG_InGameTeamSimpleInfo::HandleHealthChanged(float OldValue, float NewValue)
 {
 	if (HPBar)

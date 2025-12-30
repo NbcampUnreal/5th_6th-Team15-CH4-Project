@@ -34,10 +34,10 @@ public:
 	void InitMinimap(UTextureRenderTarget2D* InRT);
 
 	UFUNCTION()
-	void InitTeam1IngameIcon(int32 CharacterID);
+	void InitTeam1IngameIcon(int32 CharacterID, const FString& PlayerNickName1);
 
 	UFUNCTION()
-	void InitTeam2IngameIcon(int32 CharacterID);
+	void InitTeam2IngameIcon(int32 CharacterID, const FString& PlayerNickName2);
 
 	UFUNCTION()
 	void HandleCooldownTimeChanged(FGameplayTag CooldownTag, float Remaining, float Duration);

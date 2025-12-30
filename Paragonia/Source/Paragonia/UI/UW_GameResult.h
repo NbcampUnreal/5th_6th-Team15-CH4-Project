@@ -29,7 +29,4 @@ public:
 	TObjectPtr<UTextBlock> ResultText;
 
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (BindWidget))
-	TObjectPtr<UButton> ReturnToTitleButton;
-
 };

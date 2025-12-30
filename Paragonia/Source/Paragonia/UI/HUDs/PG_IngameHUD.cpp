@@ -100,14 +100,14 @@ void UPG_IngameHUD::InitMinimap(UTextureRenderTarget2D* InRT)
     MiniMapWidget->SetMinimapRenderTarget(InRT);
 }
 
-void UPG_IngameHUD::InitTeam1IngameIcon(int32 CharacterID)
+void UPG_IngameHUD::InitTeam1IngameIcon(int32 CharacterID, const FString& PlayerNickName1)
 {
-    Team1HPBar->InitTeamSimpleInfo(CharacterID);
+    Team1HPBar->InitTeamSimpleInfo(CharacterID, PlayerNickName1);
 }
 
-void UPG_IngameHUD::InitTeam2IngameIcon(int32 CharacterID)
+void UPG_IngameHUD::InitTeam2IngameIcon(int32 CharacterID, const FString& PlayerNickName2)
 {
-    Team2HPBar->InitTeamSimpleInfo(CharacterID);
+    Team2HPBar->InitTeamSimpleInfo(CharacterID, PlayerNickName2);
 }
 
 void UPG_IngameHUD::HandleCooldownTimeChanged(FGameplayTag CooldownTag, float Remaining, float Duration)

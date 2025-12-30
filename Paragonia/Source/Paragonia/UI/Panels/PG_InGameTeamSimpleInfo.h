@@ -18,6 +18,7 @@ class PARAGONIA_API UPG_InGameTeamSimpleInfo : public UCommonUserWidget
 
 public:
 	void InitTeamSimpleInfo(int32 CharacterID);
+	void InitTeamSimpleInfo(int32 CharacterID, const FString& PlayerName);
 
 	UPG_HPBar* GetTeamHPBar() const { return HPBar; }
 

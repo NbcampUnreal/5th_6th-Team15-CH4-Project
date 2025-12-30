@@ -44,4 +44,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawn Actor")
 	TSubclassOf<AActor> UltBulletClass;
 
+	bool bIsUlt;
+
 };

@@ -41,7 +41,7 @@ void UGA_Attack_Sparrow::ActivateAbility(
 		return;
 	}
 
-	bool bIsUlt = ASC->GetOwnedGameplayTags().HasTag(FGameplayTag::RequestGameplayTag(TEXT("Character.State.SparrowUlt")));
+	bIsUlt = ASC->GetOwnedGameplayTags().HasTag(FGameplayTag::RequestGameplayTag(TEXT("Character.State.SparrowUlt")));
 
 	FAttackData& RealAttackData = bIsUlt ? UltAttackData : AttackData;
 	TSubclassOf<AActor> RealBulletClass = bIsUlt ? UltBulletClass : SpawnActorClass;

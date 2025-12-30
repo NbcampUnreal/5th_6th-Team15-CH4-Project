@@ -25,7 +25,7 @@ public:
 	void SetPlayerIcon(const FName& CharacterName);
 
 	UFUNCTION(BlueprintCallable, Category = "PlayerIcon")
-	void SetPlayerNameText(const FText& InName);
+	void SetPlayerNameText(const FString& InName);
 
 	UFUNCTION(BlueprintCallable, Category = "LobbyData")
 	int32 GetPlayerNumberId() const { return PlayerNumberID; }

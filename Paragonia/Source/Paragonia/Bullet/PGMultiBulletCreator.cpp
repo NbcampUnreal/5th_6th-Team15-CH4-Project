@@ -15,8 +15,16 @@ void APGMultiBulletCreator::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CreateBullets();
-	Destroy();
+	if (HasAuthority())
+	{
+		GetWorldTimerManager().SetTimerForNextTick(
+			[this]()
+			{
+				CreateBullets();
+				Destroy();
+			}
+		);
+	}
 }
 
 void APGMultiBulletCreator::PostInitializeComponents()

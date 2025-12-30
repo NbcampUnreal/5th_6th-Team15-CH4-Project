@@ -99,7 +99,7 @@ void UPG_PlayerIcon::SetPlayerIcon(const FName& CharacterName)
 	ApplyIconTexture(Tex);
 }
 
-void UPG_PlayerIcon::SetPlayerNameText(const FText& InName)
+void UPG_PlayerIcon::SetPlayerNameText(const FString& InName)
 {
 	if (PlayerNameBase)
 	{
@@ -108,7 +108,7 @@ void UPG_PlayerIcon::SetPlayerNameText(const FText& InName)
 
 	if (PlayerName)
 	{
-		PlayerName->SetText(InName);
+		PlayerName->SetText(FText::AsCultureInvariant(InName));
 	}
 }
 
