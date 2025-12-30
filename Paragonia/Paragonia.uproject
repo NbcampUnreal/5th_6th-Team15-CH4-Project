@@ -52,7 +52,7 @@
 			"Enabled": true
 		},
 		{
-			"Name": "OnlineServicesEOS",
+			"Name": "OnlineServicesEOSPlus",
 			"Enabled": true
 		}
 	]
