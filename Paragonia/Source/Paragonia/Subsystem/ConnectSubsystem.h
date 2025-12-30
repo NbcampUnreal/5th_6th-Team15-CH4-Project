@@ -45,8 +45,10 @@ private:
 	void OnCreateSessionComplete(FName SessionName, bool bWasSuccessful);
 	void OnFindSessionsComplete(bool bWasSuccessful);
 	void OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
+	void OnDestroySessionComplete(FName SessionName, bool bWasSuccessful);
 
 	TSharedPtr<FOnlineSessionSearch> SessionSearch;
 
 	bool bIsLoggedIn = false;
+	FDelegateHandle DestroySessionDelegateHandle;
 };

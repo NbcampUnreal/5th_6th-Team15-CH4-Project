@@ -78,8 +78,8 @@ void UConnectSubsystem::CreateGameSession()
 		FOnlineSessionSettings Settings;
 
 		Settings.bIsDedicated = true;       // 중요: 데디 서버임을 명시
-		Settings.bIsLANMatch = false;       // 스팀/에픽 망 사용
-		//Settings.bIsLANMatch = true;       // 테스트용
+		//Settings.bIsLANMatch = false;       // 스팀/에픽 망 사용
+		Settings.bIsLANMatch = true;       // 테스트용
 		Settings.NumPublicConnections = 10; // 최대 인원
 		Settings.bShouldAdvertise = true;   // 검색 허용
 		Settings.bUsesPresence = false;     // 데디 서버는 플레이어가 아니므로 Presence(상태) 없음
@@ -113,14 +113,33 @@ void UConnectSubsystem::OnCreateSessionComplete(FName SessionName, bool bWasSucc
 void UConnectSubsystem::FindAndJoinSession()
 {
 	IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
-	if (!Subsystem) return;
+	if (!Subsystem) 
+		return;
 
 	IOnlineSessionPtr SessionInterface = Subsystem->GetSessionInterface();
 	if (SessionInterface.IsValid())
 	{
+		auto ExistingSession = SessionInterface->GetNamedSession(FName("MySession"));
+
+		if (ExistingSession != nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[ConnectSubsystem] Old Session Found! Destroying it before searching..."));
+
+			// 2. 찌꺼기가 있다면 파괴(Destroy)부터 진행
+			// 파괴가 끝나면 OnDestroySessionComplete가 호출되도록 연결
+			DestroySessionDelegateHandle = SessionInterface->AddOnDestroySessionCompleteDelegate_Handle(
+				FOnDestroySessionCompleteDelegate::CreateUObject(this, &UConnectSubsystem::OnDestroySessionComplete));
+
+			SessionInterface->DestroySession(FName("MySession"));
+
+			return;
+		}
+
 		SessionSearch = MakeShareable(new FOnlineSessionSearch());
-		SessionSearch->bIsLanQuery = false;
-		//SessionSearch->bIsLanQuery = true;
+
+		//SessionSearch->bIsLanQuery = false;   // 스팀/EOS 외부 연결용
+		SessionSearch->bIsLanQuery = true; // LAN 테스트용
+
 		SessionSearch->MaxSearchResults = 100;
 		SessionSearch->QuerySettings.Set(FName("SEARCH_PRESENCE"), true, EOnlineComparisonOp::Equals);
 
@@ -270,5 +289,29 @@ void UConnectSubsystem::OnJoinSessionComplete(FName SessionName, EOnJoinSessionC
 				PC->ClientTravel(ConnectString, TRAVEL_Absolute);
 			}
 		}
+	}
+}
+
+void UConnectSubsystem::OnDestroySessionComplete(FName SessionName, bool bWasSuccessful)
+{
+	IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
+	if (Subsystem)
+	{
+		IOnlineSessionPtr SessionInterface = Subsystem->GetSessionInterface();
+		if (SessionInterface.IsValid())
+		{
+			SessionInterface->ClearOnDestroySessionCompleteDelegate_Handle(DestroySessionDelegateHandle);
+		}
+	}
+
+	if (bWasSuccessful)
+	{
+		UE_LOG(LogTemp, Log, TEXT("[ConnectSubsystem] Old Session Destroyed. Restarting FindAndJoinSession..."));
+
+		FindAndJoinSession();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[ConnectSubsystem] Failed to destroy old session."));
 	}
 }
