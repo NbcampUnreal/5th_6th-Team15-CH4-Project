@@ -140,10 +140,10 @@ void UConnectSubsystem::FindAndJoinSession()
 		SessionSearch->bIsLanQuery = false;   // 스팀/EOS 외부 연결용
 		//SessionSearch->bIsLanQuery = true; // LAN 테스트용
 
-		SessionSearch->MaxSearchResults = 100;
+		SessionSearch->MaxSearchResults = 20000;
 		//SessionSearch->QuerySettings.Set(FName("SEARCH_PRESENCE"), true, EOnlineComparisonOp::Equals);
 
-		SessionSearch->QuerySettings.Set(FName("MatchType"), FString("FreeForAll"), EOnlineComparisonOp::Equals);
+		//SessionSearch->QuerySettings.Set(FName("MatchType"), FString("FreeForAll"), EOnlineComparisonOp::Equals);
 
 		SessionInterface->AddOnFindSessionsCompleteDelegate_Handle(FOnFindSessionsCompleteDelegate::CreateUObject(this, &UConnectSubsystem::OnFindSessionsComplete));
 
