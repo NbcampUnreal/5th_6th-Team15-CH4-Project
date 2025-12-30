@@ -19,6 +19,9 @@ public:
 
 	void ConnectLobby();
 
+	UFUNCTION()
+	void OnLoginSuccess();
+
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = UI, Meta = (AllowPrivateAccess))
 	TSubclassOf<UUserWidget> UIWidgetClass;

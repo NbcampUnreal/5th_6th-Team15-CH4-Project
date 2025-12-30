@@ -30,7 +30,24 @@ void ATitlePlayerController::BeginPlay()
 		}
 	}
 
-	ConnectLobby();
+	UGameInstance* GameInstance = GetGameInstance();
+	if (IsValid(GameInstance))
+	{
+		UConnectSubsystem* ConnectSubsystem = GameInstance->GetSubsystem<UConnectSubsystem>();
+		if (IsValid(ConnectSubsystem))
+		{
+			if (ConnectSubsystem->IsPlayerLoggedIn())
+			{
+				UE_LOG(LogTemp, Log, TEXT("[TitlePC] Already Logged In. Connecting..."));
+				ConnectLobby();
+			}
+			else
+			{
+				UE_LOG(LogTemp, Log, TEXT("[TitlePC] Waiting for Login..."));
+				ConnectSubsystem->OnLoginSuccessDelegate.AddDynamic(this, &ATitlePlayerController::OnLoginSuccess);
+			}
+		}
+	}
 }
 
 void ATitlePlayerController::ConnectLobby()
@@ -47,10 +64,22 @@ void ATitlePlayerController::ConnectLobby()
 	{
 		UE_LOG(LogTemp, Log, TEXT("[TitlePC] Requesting connection to Lobby..."));
 
-		ConnectSubsystem->ConnectToConfigIp();
+		ConnectSubsystem->FindAndJoinSession();
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[TitlePC] ConnectSubsystem is invalid!"));
 	}
+}
+
+void ATitlePlayerController::OnLoginSuccess()
+{
+	UGameInstance* GameInstance = GetGameInstance();
+	if (GameInstance)
+	{
+		UConnectSubsystem* Sub = GameInstance->GetSubsystem<UConnectSubsystem>();
+		if (Sub) Sub->OnLoginSuccessDelegate.RemoveDynamic(this, &ATitlePlayerController::OnLoginSuccess);
+	}
+
+	ConnectLobby();
 }
