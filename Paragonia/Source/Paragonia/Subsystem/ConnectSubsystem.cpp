@@ -141,7 +141,9 @@ void UConnectSubsystem::FindAndJoinSession()
 		//SessionSearch->bIsLanQuery = true; // LAN 테스트용
 
 		SessionSearch->MaxSearchResults = 100;
-		SessionSearch->QuerySettings.Set(FName("SEARCH_PRESENCE"), true, EOnlineComparisonOp::Equals);
+		//SessionSearch->QuerySettings.Set(FName("SEARCH_PRESENCE"), true, EOnlineComparisonOp::Equals);
+
+		SessionSearch->QuerySettings.Set(FName("MatchType"), FString("FreeForAll"), EOnlineComparisonOp::Equals);
 
 		SessionInterface->AddOnFindSessionsCompleteDelegate_Handle(FOnFindSessionsCompleteDelegate::CreateUObject(this, &UConnectSubsystem::OnFindSessionsComplete));
 
