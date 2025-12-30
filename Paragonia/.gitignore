@@ -1,5 +1,5 @@
 
-Binaries/
+Binaries/*
 Build/
 DerivedDataCache/
 Intermediate/
@@ -23,3 +23,10 @@ Saved/
 # Visual Studio cache
 .vs/
 *.ipch
+
+
+!Binaries/Win64/
+
+Binaries/Win64/*
+
+!Binaries/Win64/steam_appid.txt
