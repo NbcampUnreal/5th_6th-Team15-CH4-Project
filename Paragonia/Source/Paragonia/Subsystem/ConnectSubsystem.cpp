@@ -78,8 +78,8 @@ void UConnectSubsystem::CreateGameSession()
 		FOnlineSessionSettings Settings;
 
 		Settings.bIsDedicated = true;       // 중요: 데디 서버임을 명시
-		//Settings.bIsLANMatch = false;       // 스팀/에픽 망 사용
-		Settings.bIsLANMatch = true;       // 테스트용
+		Settings.bIsLANMatch = false;       // 스팀/에픽 망 사용
+		//Settings.bIsLANMatch = true;       // 테스트용
 		Settings.NumPublicConnections = 10; // 최대 인원
 		Settings.bShouldAdvertise = true;   // 검색 허용
 		Settings.bUsesPresence = false;     // 데디 서버는 플레이어가 아니므로 Presence(상태) 없음
@@ -137,8 +137,8 @@ void UConnectSubsystem::FindAndJoinSession()
 
 		SessionSearch = MakeShareable(new FOnlineSessionSearch());
 
-		//SessionSearch->bIsLanQuery = false;   // 스팀/EOS 외부 연결용
-		SessionSearch->bIsLanQuery = true; // LAN 테스트용
+		SessionSearch->bIsLanQuery = false;   // 스팀/EOS 외부 연결용
+		//SessionSearch->bIsLanQuery = true; // LAN 테스트용
 
 		SessionSearch->MaxSearchResults = 100;
 		SessionSearch->QuerySettings.Set(FName("SEARCH_PRESENCE"), true, EOnlineComparisonOp::Equals);
