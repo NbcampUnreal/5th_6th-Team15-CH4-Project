@@ -124,4 +124,13 @@ protected:
     float ReturnLobbyTime = 5.f;
 #pragma endregion
 
+#pragma region Chatting
+
+public:
+    void PrintChatMessageString(APGPlayerController* InChattingPlayerController, const FString& InChatMessageString, const int32& InTeamID);
+
+
+#pragma endregion
+
+
 };

@@ -33,7 +33,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetMinimapSprite(UPaperSprite* NewSprite);
 
-	void SetIngameHPBarColor(int32 TeamType);
+	void SetIngameInfo(bool TeamType, const FString& InNickName);
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 

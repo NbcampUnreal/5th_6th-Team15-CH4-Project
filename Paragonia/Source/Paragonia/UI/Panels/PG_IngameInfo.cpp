@@ -4,12 +4,33 @@
 #include "UI/Panels/PG_IngameInfo.h"
 #include "AttributeSet/CharacterAttributeSet.h"
 #include "UI/Bars/PG_HPBar.h"
+#include "Components/TextBlock.h"
 
-void UPG_IngameInfo::SetHPBarColor(int32 TeamType)
+void UPG_IngameInfo::SetHPBarColor(bool TeamType)
 {
 	if (PlayerHPBar)
 	{
 		PlayerHPBar->SetTeamColor(TeamType);
+	}
+}
+
+void UPG_IngameInfo::SetNickName(const FString& InNickName, bool CheckTeam)
+{
+	FString Nickname = InNickName;
+	Nickname.TrimStartAndEndInline();
+
+	if (Nickname.IsEmpty())
+	{
+		Nickname = TEXT("Unknown");
+	}
+
+	if (PlayerName)
+	{
+		PlayerName->SetText(FText::FromString(Nickname));
+		if (CheckTeam == false)
+		{
+			PlayerName->SetColorAndOpacity(FSlateColor(FLinearColor::Red));
+		}
 	}
 }
 

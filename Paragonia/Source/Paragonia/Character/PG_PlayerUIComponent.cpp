@@ -139,7 +139,7 @@ UTextureRenderTarget2D* UPG_PlayerUIComponent::GetMinimapRenderTarget()
 	return MinimapRT;
 }
 
-void UPG_PlayerUIComponent::SetHPBarColor(int32 TeamType)
+void UPG_PlayerUIComponent::SetHPBarColor(bool TeamType)
 {
 	if (!IsValid(HeadHPWidget))
 	{
@@ -147,4 +147,14 @@ void UPG_PlayerUIComponent::SetHPBarColor(int32 TeamType)
 	}
 
 	HeadHPWidget->SetHPBarColor(TeamType);
+}
+
+void UPG_PlayerUIComponent::SetPlayerNickName(const FString& InNickName, bool CheckTeam)
+{
+	if (!IsValid(HeadHPWidget))
+	{
+		return;
+	}
+
+	HeadHPWidget->SetNickName(InNickName, CheckTeam);
 }

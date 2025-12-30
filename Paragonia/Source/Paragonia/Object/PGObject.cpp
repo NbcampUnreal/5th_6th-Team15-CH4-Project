@@ -19,7 +19,6 @@ APGObject::APGObject()
 	ASC->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
 	ObjectAttributeSet = CreateDefaultSubobject<UCharacterAttributeSet>(TEXT("CharacterAttributeSet"));
-
 }
 
 UAbilitySystemComponent* APGObject::GetAbilitySystemComponent() const
@@ -31,7 +30,7 @@ UAbilitySystemComponent* APGObject::GetAbilitySystemComponent() const
 void APGObject::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	InitializeActorInfo();
 
 	if (HasAuthority())
@@ -40,7 +39,6 @@ void APGObject::BeginPlay()
 		InitializeAttributesData();
 	}
 }
-
 
 void APGObject::InitializeActorInfo()
 {

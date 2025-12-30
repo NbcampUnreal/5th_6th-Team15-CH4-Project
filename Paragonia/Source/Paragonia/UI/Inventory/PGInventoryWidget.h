@@ -51,4 +51,6 @@ protected:
 
     UPROPERTY() 
     TArray<TObjectPtr<UPGInventorySlotWidget>> SlotWidgets;
+
+    int32 SelectedSlotIndex = -1;
 };

@@ -13,6 +13,7 @@ void UPGInventoryWidget::NativeConstruct()
     Super::NativeConstruct();
 
     InitFromOwningPlayer();
+    SelectedSlotIndex = -1;
 }
 
 void UPGInventoryWidget::NativeDestruct()
@@ -116,6 +117,24 @@ void UPGInventoryWidget::RefreshAll()
 
 void UPGInventoryWidget::HandleSlotClicked(int32 SlotIndex)
 {
+    if (SlotWidgets.IsValidIndex(SelectedSlotIndex))
+    {
+        if (UPGInventorySlotWidget* OldSlot = SlotWidgets[SelectedSlotIndex])
+        {
+            OldSlot->SetSelected(false);
+        }
+    }
+
+    SelectedSlotIndex = SlotIndex;
+
+    if (SlotWidgets.IsValidIndex(SelectedSlotIndex))
+    {
+        if (UPGInventorySlotWidget* NewSlot = SlotWidgets[SelectedSlotIndex])
+        {
+            NewSlot->SetSelected(true);
+        }
+    }
+
     OnInventorySlotSelected.Broadcast(SlotIndex);
 }
 

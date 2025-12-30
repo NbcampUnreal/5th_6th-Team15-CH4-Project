@@ -50,11 +50,12 @@ void APGCharacterBase::BeginPlay()
 	}
 }
 
-void APGCharacterBase::SetIngameHPBarColor(int32 TeamType)
+void APGCharacterBase::SetIngameInfo(bool TeamType, const FString& InNickName)
 {
 	if (IsValid(UIComponent))
 	{
 		UIComponent->SetHPBarColor(TeamType);
+		UIComponent->SetPlayerNickName(InNickName, !TeamType);
 	}
 }
 

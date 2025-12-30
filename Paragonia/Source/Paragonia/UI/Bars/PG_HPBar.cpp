@@ -96,7 +96,7 @@ void UPG_HPBar::SetPlayerColor()
 
 //0 팀
 //1 적
-void UPG_HPBar::SetTeamColor(int32 TeamType)
+void UPG_HPBar::SetTeamColor(bool TeamType)
 {
     UMaterialInstanceDynamic* BarFillMID = BarFill->GetDynamicMaterial();
 

@@ -23,6 +23,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTeamIDChangedDelegate, int32, New
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMatchWaitTimeChangedDelegate, int32, NewTime);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLobbyUIHelperDelegate, EPlayerLobbyState, NewState, int32, PlayerUID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNickNameChangedDelegate, const FString&, NewNickName);
 
 /**
  *
@@ -56,6 +57,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "LobbyData")
 	int32 GetPlayerNumberId() const { return PlayerNumberId; }
 
+	UFUNCTION(BlueprintCallable, Category = "LobbyData")
+	const FString& GetPlayerNickName() const { return PlayerNickName; }
+
 	// Client -> Server RPC
 	UFUNCTION(Server, Reliable)
 	void ServerSetLobbyState(EPlayerLobbyState NewState);
@@ -65,6 +69,9 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void ServerSetTeamID(int32 NewTeamID);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetNickName(const FString& NewNickName);
 
 	// PlayerID는 접속시에 한 번 정해지기에 Setter
 	void SetPlayerNumberId(int32 NewID);
@@ -86,6 +93,8 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnMatchWaitTimeChangedDelegate OnMatchTimeChanged;
 
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnNickNameChangedDelegate OnNickNameChanged;
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnLobbyUIHelperDelegate OnLobbyPlayerStateChangedHelperUI;
@@ -102,6 +111,9 @@ protected:
 
 	UFUNCTION()
 	void OnRep_MatchWaitTime();
+
+	UFUNCTION()
+	void OnRep_PlayerNickName();
 
 protected:
 	UFUNCTION(Category = "Lobby|Matching")
@@ -125,6 +137,9 @@ protected:
 
 	UPROPERTY(ReplicatedUsing = OnRep_MatchWaitTime)
 	int32 MatchWaitTime;
+
+	UPROPERTY(ReplicatedUsing = OnRep_PlayerNickName)
+	FString PlayerNickName;
 
 	UPROPERTY(Replicated)
 	int32 PlayerNumberId;

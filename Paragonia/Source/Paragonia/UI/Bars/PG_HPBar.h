@@ -33,7 +33,7 @@ public:
 	void SetPlayerColor();
 
 	UFUNCTION(BlueprintCallable)
-	void SetTeamColor(int32 TeamType);
+	void SetTeamColor(bool TeamType);
 
 protected:
 	UPROPERTY(meta = (BindWidget))    

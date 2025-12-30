@@ -8,6 +8,16 @@
 #include "PGShopTypes.generated.h"
 
 UENUM(BlueprintType)
+enum class EItemRarity : uint8
+{
+    Common      UMETA(DisplayName = "Common"),
+    Uncommon    UMETA(DisplayName = "Uncommon"),
+    Rare        UMETA(DisplayName = "Rare"),
+    Unique      UMETA(DisplayName = "Unique"),
+    Legendary   UMETA(DisplayName = "Legendary")
+};
+
+UENUM(BlueprintType)
 enum class EShopCategory : uint8
 {
     All     UMETA(DisplayName = "All"),
@@ -39,6 +49,9 @@ struct FPGShopItemRow : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     EShopCategory Category = EShopCategory::All;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    EItemRarity Rarity = EItemRarity::Common;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     FGameplayTag ItemTag;

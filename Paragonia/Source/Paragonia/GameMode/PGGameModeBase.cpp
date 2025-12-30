@@ -449,3 +449,27 @@ void APGGameModeBase::ReturnToLobby()
     }
 }
 #pragma endregion EndGame
+
+#pragma region Chatting
+
+void APGGameModeBase::PrintChatMessageString(APGPlayerController* InChattingPlayerController, const FString& InChatMessageString, const int32& InTeamID)
+{
+    APGPlayerState* PGPS = InChattingPlayerController->GetPlayerState<APGPlayerState>();
+    if (!IsValid(PGPS))
+    {
+        return;
+    }
+
+    for (TActorIterator<APGPlayerController> It(GetWorld()); It; ++It)
+    {
+        APGPlayerController* PC = *It;
+        if (IsValid(PC) == true)
+        {
+            PC->ClientRPCPrintChatMessageString(PGPS->GetPlayerNickName(), InChatMessageString, InTeamID);
+        }
+    }
+}
+
+#pragma endregion
+
+

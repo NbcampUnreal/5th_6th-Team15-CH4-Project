@@ -19,7 +19,9 @@ void UPGShopWidget::NativeConstruct()
 
     if (ItemTileView)
     {
-        ItemTileView->OnItemClicked().AddUObject(this, &UPGShopWidget::HandleItemClicked);
+        ItemTileView->SetSelectionMode(ESelectionMode::Single);
+
+        ItemTileView->OnItemSelectionChanged().AddUObject(this, &UPGShopWidget::HandleItemClicked);
     }
 }
 
@@ -186,8 +188,11 @@ void UPGShopWidget::HandleItemClicked(UObject* Item)
         return;
     }
 
-    DetailWidget->BindShop(ShopComp);
-    DetailWidget->SetItem(Obj->Data);
+    if (ItemTileView->IsItemSelected(Item))
+    {
+        DetailWidget->BindShop(ShopComp);
+        DetailWidget->SetItem(Obj->Data);
+    }
 }
 
 void UPGShopWidget::OnBuyResult(EShopBuyResult Result, FName ItemId)
@@ -196,7 +201,4 @@ void UPGShopWidget::OnBuyResult(EShopBuyResult Result, FName ItemId)
     {
         DetailWidget->RefreshStock();
     }
-
-    // 필요하면 여기서 성공/실패 띄우기
-    // Result == Success / NotEnoughGold / OutOfStock / InvalidItem
 }

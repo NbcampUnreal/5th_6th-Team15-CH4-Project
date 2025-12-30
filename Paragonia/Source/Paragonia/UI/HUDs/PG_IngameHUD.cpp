@@ -10,6 +10,7 @@
 #include "GameplayTagContainer.h"
 #include "UI/MiniMap/PG_MiniMap.h"
 #include "AttributeSet/CharacterAttributeSet.h"
+#include "UI/Chatting/ChatWidget.h"
 
 void UPG_IngameHUD::NativeOnInitialized()
 {
@@ -179,3 +180,16 @@ void UPG_IngameHUD::BindCooldownToSkillIcon()
 	PlayerCharacter->OnCooldownTimeChangedDelegate.AddDynamic(this, &ThisClass::HandleCooldownTimeChanged);
 	PlayerCharacter->OnCooldownTagChangedDelegate.AddDynamic(this, &ThisClass::HandleCooldownTagChanged);
 }
+
+
+#pragma region Chatting
+
+void UPG_IngameHUD::PrintChatMessageString(const FString& PlayerName, const FString& InChatMessageString, const int32& InTeamID)
+{
+    if (!IsValid(ChatWidget)) return;
+
+    ChatWidget->AddLog(PlayerName, InChatMessageString, InTeamID);
+}
+
+#pragma endregion
+

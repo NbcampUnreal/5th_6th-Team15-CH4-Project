@@ -32,6 +32,7 @@ ANpcBaseCharacter::ANpcBaseCharacter()
 
 	GetCharacterMovement()->bUseRVOAvoidance = true;
 	GetCharacterMovement()->AvoidanceConsiderationRadius = 150.0f;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 
 	StateTreeComponent = CreateDefaultSubobject<UStateTreeComponent>(TEXT("StateTreeComponent"));
 	StateTreeComponent->SetAutoActivate(true);
@@ -138,6 +139,8 @@ void ANpcBaseCharacter::HandleDeath(AActor* KillerActor)
 			return;
 		}
 
+		bIsDead = true;
+
 		if (IsValid(ASC) == true
 			&& DeadTag.IsValid() == true)
 		{
@@ -205,7 +208,6 @@ void ANpcBaseCharacter::Multicast_HandleDeath_Implementation()
 		}
 	}
 
-	bIsDead = true;
 	DeathAccumulatedTime = 0.0f;
 
 	SetActorTickEnabled(true);

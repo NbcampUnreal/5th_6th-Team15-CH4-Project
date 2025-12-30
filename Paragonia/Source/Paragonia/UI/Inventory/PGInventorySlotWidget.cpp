@@ -3,6 +3,7 @@
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "Components/Border.h"
 
 #include "UI/Inventory/PGInventoryDragOp.h"
 #include "Inventory/PGInventoryComponent.h"  
@@ -14,6 +15,11 @@
 void UPGInventorySlotWidget::NativeConstruct()
 {
     Super::NativeConstruct();
+
+    if (SelectionBorder)
+    {
+        SelectionBorder->SetVisibility(ESlateVisibility::Hidden);
+    }
 }
 
 void UPGInventorySlotWidget::Init(UPGInventoryComponent* InInventory, int32 InSlotIndex)
@@ -21,6 +27,22 @@ void UPGInventorySlotWidget::Init(UPGInventoryComponent* InInventory, int32 InSl
     Inventory = InInventory;
     SlotIndex = InSlotIndex;
     Refresh();
+}
+
+void UPGInventorySlotWidget::SetSelected(bool bIsSelected)
+{
+    if (SelectionBorder)
+    {
+        if (bIsSelected)
+        {
+            // 보더가 보이되, 클릭을 가로채지 않도록 HitTestInvisible 권장
+            SelectionBorder->SetVisibility(ESlateVisibility::HitTestInvisible);
+        }
+        else
+        {
+            SelectionBorder->SetVisibility(ESlateVisibility::Hidden);
+        }
+    }
 }
 
 void UPGInventorySlotWidget::Refresh()
@@ -60,6 +82,23 @@ void UPGInventorySlotWidget::Refresh()
                 {
                     IconImage->SetBrushFromTexture(nullptr);
                     IconImage->SetVisibility(ESlateVisibility::Hidden);
+                }
+
+                if (Row)
+                {
+                    if (InLineBorder)
+                    {
+                        InLineBorder->SetBrushColor(GetColorByRarity(Row->Rarity));
+                        // 혹은 SetColorAndOpacity 사용
+                    }
+                }
+                else
+                {
+                    // 아이템 없으면 기본색(투명 혹은 어두운색)
+                    if (InLineBorder)
+                    {
+                        InLineBorder->SetBrushColor(FLinearColor(0.1f, 0.1f, 0.1f, 1.0f));
+                    }
                 }
             }
         }
@@ -180,4 +219,17 @@ bool UPGInventorySlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDr
         return true;
     }
     return false;
+}
+
+FLinearColor UPGInventorySlotWidget::GetColorByRarity(EItemRarity Rarity)
+{
+    switch (Rarity)
+    {
+        case EItemRarity::Common:    return FLinearColor(0.6f, 0.6f, 0.6f, 0.5f); break;
+        case EItemRarity::Uncommon:  return FLinearColor(0.2f, 1.0f, 0.2f, 0.5f); break;
+        case EItemRarity::Rare:      return FLinearColor(0.2f, 0.5f, 1.0f, 0.5f); break;
+        case EItemRarity::Unique:    return FLinearColor(0.7f, 0.2f, 1.0f, 0.5f); break;
+        case EItemRarity::Legendary: return FLinearColor(1.0f, 0.6f, 0.0f, 0.5f); break;
+        default:                     return FLinearColor(0.2f, 0.2f, 0.2f, 1.0f); break;
+    }
 }

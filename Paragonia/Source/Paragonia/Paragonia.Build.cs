@@ -17,6 +17,7 @@ public class Paragonia : ModuleRules
             "AIModule",
             "UMG",
             "Slate",
+			"SlateCore",
 
 			// GAS
 			"GameplayAbilities",

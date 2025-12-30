@@ -36,6 +36,8 @@ public:
 
 
 
+
+
 protected:
 
 	bool SetMyHPBar(APGPlayerState* LocalPS);
@@ -116,4 +118,21 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UPGShopComponent> ShopComponent;
 #pragma endregion Shop
+
+
+#pragma region Chatting
+
+public:
+	UFUNCTION()
+	void SetChatMessageString(const FString& InChatMessageString);
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPCPrintChatMessageString(const FString& InChatMessageString);
+
+	UFUNCTION(Client, Reliable)
+	void ClientRPCPrintChatMessageString(const FString& PlayerName, const FString& InChatMessageString, const int32& InTeamID);
+
+	void PrintChatMessageString(const FString& PlayerName, const FString& InChatMessageString, const int32& InTeamID);
+
+#pragma endregion
 };

@@ -13,6 +13,7 @@ class UPG_SkillIcon;
 class UTextureRenderTarget2D;
 class UCharacterAttributeSet;
 class UWidgetAnimation;
+class UChatWidget;
 
 UCLASS()
 class PARAGONIA_API UPG_IngameHUD : public UCommonUserWidget
@@ -93,4 +94,16 @@ private:
 
 	UPROPERTY()
 	TMap<EHPBarSlot, TObjectPtr<UPG_AttrSetBindProxy>> BindProxies;
+
+#pragma region Chatting
+
+protected:
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UChatWidget> ChatWidget;
+
+public:
+	void PrintChatMessageString(const FString& PlayerName, const FString& InChatMessageString, const int32& InTeamID);
+
+#pragma endregion
+
 };

@@ -23,8 +23,11 @@ public:
 
 	int32 GetCharID() const { return CharacterID; }
 	int32 GetTeamID() const { return TeamID; }
+	const FString& GetPlayerNickName() const { return PlayerNickName; }
+
 	void SetCharID(int32 NewCharID);
 	void SetTeamID(int32 NewTeamID);
+	void SetPlayerNickName(const FString& NewPlayerNickName);
 	int32 GetGold() const { return Gold; }
 
 protected:
@@ -32,6 +35,8 @@ protected:
 	int32 CharacterID;
 	UPROPERTY(VisibleAnywhere, Replicated)
 	int32 TeamID;
+	UPROPERTY(VisibleAnywhere, Replicated)
+	FString PlayerNickName;
 
 public:
 	UPROPERTY(VisibleAnywhere, Replicated)
@@ -50,7 +55,7 @@ public:
 
 protected:
 	UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_Gold, BlueprintReadOnly)
-	int32 Gold = 1000;
+	int32 Gold = 400;
 #pragma endregion Shop
 
 #pragma region Inventory

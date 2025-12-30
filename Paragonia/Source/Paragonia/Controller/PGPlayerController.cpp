@@ -15,6 +15,7 @@
 #include "Struct/FCharacterResourceInfo.h"
 #include "Object/PGNexus.h"
 #include "EngineUtils.h" 
+#include "Kismet/GameplayStatics.h"
 
 void APGPlayerController::Client_SetExpectedPlayerCount_Implementation(int32 InExpectedPlayerCount)
 {
@@ -324,7 +325,7 @@ bool APGPlayerController::SetTeamHPBar(const TArray<APlayerState*>& PlayerArray,
             return false;
         }
 
-        FoundCharacter->SetIngameHPBarColor(PSTeamId != LocalPSTeamId);
+        FoundCharacter->SetIngameInfo(PSTeamId != LocalPSTeamId, PGPS->GetPlayerNickName());
 
         if (PSTeamId != LocalPSTeamId)
         {
@@ -591,3 +592,57 @@ void APGPlayerController::ToggleShop()
 }
 
 #pragma endregion GameResult
+
+#pragma region Chatting
+
+void APGPlayerController::SetChatMessageString(const FString& InChatMessageString)
+{
+    if (IsLocalController())
+    {
+        APGPlayerState* PGPS = GetPlayerState<APGPlayerState>();
+        if (!IsValid(PGPS))
+        {
+            return;
+        }
+
+        ServerRPCPrintChatMessageString(InChatMessageString);
+    }
+}
+
+void APGPlayerController::ServerRPCPrintChatMessageString_Implementation(const FString& InChatMessageString)
+{
+    AGameModeBase* GM = UGameplayStatics::GetGameMode(this);
+    if (!IsValid(GM))
+    {
+        return;
+    }
+
+    APGGameModeBase* PGGM = Cast<APGGameModeBase>(GM);
+    if (!IsValid(PGGM))
+    {
+        return;
+    }
+
+    APGPlayerCharacterBase* PlayerCharacter = Cast<APGPlayerCharacterBase>(GetPawn());
+    if (!IsValid(PlayerCharacter))
+    {
+        return;
+    }
+
+    PGGM->PrintChatMessageString(this, InChatMessageString, IPGTeamStatusInterface::Execute_GetTeamID(PlayerCharacter));
+}
+
+void APGPlayerController::ClientRPCPrintChatMessageString_Implementation(const FString& PlayerName, const FString& InChatMessageString, const int32& InTeamID)
+{
+    PrintChatMessageString(PlayerName, InChatMessageString, InTeamID);
+}
+
+void APGPlayerController::PrintChatMessageString(const FString& PlayerName, const FString& InChatMessageString, const int32& InTeamID)
+{
+    if (!IsValid(IngameHUD)) return;
+
+    IngameHUD->PrintChatMessageString(PlayerName, InChatMessageString, InTeamID);
+}
+
+#pragma endregion
+

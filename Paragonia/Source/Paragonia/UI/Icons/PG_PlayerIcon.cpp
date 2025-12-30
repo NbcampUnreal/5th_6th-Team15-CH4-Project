@@ -7,6 +7,7 @@
 #include "Engine/GameInstance.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "Components/Border.h"
 
 void UPG_PlayerIcon::SetPlayerNumberId(int32 InPlayerNumberID) 
 { 
@@ -100,6 +101,11 @@ void UPG_PlayerIcon::SetPlayerIcon(const FName& CharacterName)
 
 void UPG_PlayerIcon::SetPlayerNameText(const FText& InName)
 {
+	if (PlayerNameBase)
+	{
+		PlayerNameBase->SetVisibility(ESlateVisibility::Visible);
+	}
+
 	if (PlayerName)
 	{
 		PlayerName->SetText(InName);

@@ -19,7 +19,10 @@ class PARAGONIA_API UPG_IngameInfo : public UCommonUserWidget
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void SetHPBarColor(int32 TeamType);
+	void SetHPBarColor(bool TeamType);
+
+	UFUNCTION(BlueprintCallable)
+	void SetNickName(const FString& InNickName, bool CheckTeam);
 
 	void BindToAttributeSet(UCharacterAttributeSet* InAttrSet);
 

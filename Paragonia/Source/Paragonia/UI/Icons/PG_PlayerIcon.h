@@ -8,6 +8,7 @@
 
 class UImage;
 class UTextBlock;
+class UBorder;
 class UPGCharacterDescriptionSubsystem;
 /**
  * 
@@ -41,6 +42,9 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> PlayerName;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UBorder> PlayerNameBase;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UPGCharacterDescriptionSubsystem> CharacterDescSubsys;

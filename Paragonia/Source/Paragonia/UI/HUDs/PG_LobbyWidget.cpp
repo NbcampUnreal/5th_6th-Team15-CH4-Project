@@ -7,6 +7,7 @@
 #include "CommonButtonBase.h"
 #include "Components/CanvasPanelSlot.h"
 #include "PlayerState/LobbyPlayerState.h"
+#include "Components/EditableTextBox.h"
 
 void UPG_LobbyWidget::SetInit()
 {
@@ -41,6 +42,16 @@ void UPG_LobbyWidget::NativeOnInitialized()
             this, &ThisClass::HandleMatchingInfoCancelRequested);
     }
 
+    if (InputNickName)
+    {
+        InputNickName->OnTextChanged.AddDynamic(this, &ThisClass::HandleNickNameTextChanged);
+    }
+
+    if (SelectNickName)
+    {
+        SelectNickName->OnClicked.AddDynamic(this, &ThisClass::HandleSelectNickNameClicked);
+    }
+        
     if (GameStartButtonText)
     {
         GameStartButtonText->SetText(FText::FromString(TEXT("GameStart")));
@@ -49,6 +60,7 @@ void UPG_LobbyWidget::NativeOnInitialized()
     ReadyState = ETitleReadyState::Closed;
     bIsMoving = false;
 
+    PlayAnimation(StartGame, 0.f, 1, EUMGSequencePlayMode::Forward, 1.f);
     ApplyPosition(MatchingInfoClosedPos);
 }
 
@@ -77,16 +89,16 @@ void UPG_LobbyWidget::HandleGameStartClicked()
     switch (ReadyState)
     {
     case ETitleReadyState::Closed:
-        if (ModeSelectButton)
-            ModeSelectButton->SetIsEnabled(false);
+        //if (ModeSelectButton)
+        //    ModeSelectButton->SetIsEnabled(false);
         if (GameStartButtonText)
             GameStartButtonText->SetText(FText::FromString(TEXT("Cancel")));
         SetReadyState(ETitleReadyState::InfoOnly);
         break;
     case ETitleReadyState::InfoOnly:
     case ETitleReadyState::Armed:
-        if (ModeSelectButton)
-            ModeSelectButton->SetIsEnabled(true);
+        //if (ModeSelectButton)
+        //    ModeSelectButton->SetIsEnabled(true);
         if (GameStartButtonText)
             GameStartButtonText->SetText(FText::FromString(TEXT("GameStart")));
         SetReadyState(ETitleReadyState::Closed);
@@ -135,11 +147,46 @@ void UPG_LobbyWidget::HandleMatchingInfoCancelRequested()
 {
     SetReadyState(ETitleReadyState::Closed);
 
-    if (ModeSelectButton)
-        ModeSelectButton->SetIsEnabled(true);
+    //if (ModeSelectButton)
+    //    ModeSelectButton->SetIsEnabled(true);
 
     if (GameStartButtonText)
         GameStartButtonText->SetText(FText::FromString(TEXT("GameStart")));
+}
+
+void UPG_LobbyWidget::HandleNickNameTextChanged(const FText& NewText)
+{
+    UpdateSelectNickNameEnabled();
+}
+
+void UPG_LobbyWidget::HandleSelectNickNameClicked()
+{
+    PlayAnimation(SetNickName, 0.f, 1, EUMGSequencePlayMode::Forward, 1.f);
+
+    if (!CheckPlayerState())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("PlayerState is not ready yet!"));
+        return;
+    }
+
+    if (!InputNickName)
+    {
+        return;
+    }
+
+    LobbyPlayerState->ServerSetNickName(InputNickName->GetText().ToString());
+}
+
+void UPG_LobbyWidget::UpdateSelectNickNameEnabled()
+{
+    if (!SelectNickName || !InputNickName)
+        return;
+
+    FString Str = InputNickName->GetText().ToString();
+    Str.TrimStartAndEndInline();
+
+    const bool bEnable = !Str.IsEmpty();
+    SelectNickName->SetIsEnabled(bEnable);
 }
 
 bool UPG_LobbyWidget::CheckPlayerState()

@@ -25,6 +25,7 @@ void APGPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(APGPlayerState, CharacterID);
 	DOREPLIFETIME(APGPlayerState, bClientReady);
 	DOREPLIFETIME(APGPlayerState, Gold);
+	DOREPLIFETIME(APGPlayerState, PlayerNickName);
 }
 
 void APGPlayerState::SetCharID(int32 NewCharID)
@@ -35,6 +36,11 @@ void APGPlayerState::SetCharID(int32 NewCharID)
 void APGPlayerState::SetTeamID(int32 NewTeamID)
 {
 	this->TeamID = NewTeamID;
+}
+
+void APGPlayerState::SetPlayerNickName(const FString& NewPlayerNickName)
+{
+	this->PlayerNickName = NewPlayerNickName;
 }
 
 void APGPlayerState::OnRep_Gold()

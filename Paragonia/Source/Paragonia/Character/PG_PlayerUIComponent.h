@@ -35,7 +35,8 @@ public:
 
 	void UpdateHeadHPVisibility();
 
-	void SetHPBarColor(int32 TeamType);
+	void SetHPBarColor(bool TeamType);
+	void SetPlayerNickName(const FString& InNickName, bool CheckTeam = true);
 
 	UTextureRenderTarget2D* GetMinimapRenderTarget();
 protected:

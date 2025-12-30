@@ -10,6 +10,7 @@ class UCommonButtonBase;
 class UButton;
 class UTextBlock;
 class ALobbyPlayerState;
+class UEditableTextBox;
 
 UENUM(BlueprintType)
 enum class ETitleReadyState : uint8
@@ -46,8 +47,20 @@ protected:
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<UTextBlock> GameStartButtonText; 
 
+    //UPROPERTY(meta = (BindWidget))
+    //TObjectPtr<UButton> ModeSelectButton;
+
     UPROPERTY(meta = (BindWidget))
-    TObjectPtr<UButton> ModeSelectButton;
+    TObjectPtr<UButton> SelectNickName;
+
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UEditableTextBox> InputNickName;
+
+    UPROPERTY(Transient, meta = (BindWidgetAnim))
+    TObjectPtr<UWidgetAnimation> StartGame;
+
+    UPROPERTY(Transient, meta = (BindWidgetAnim))
+    TObjectPtr<UWidgetAnimation> SetNickName;
 
     UPROPERTY(EditAnywhere, Category = "Matching")
     FVector2D MatchingInfoClosedPos;
@@ -80,11 +93,18 @@ protected:
     UFUNCTION()
     void HandleMatchingInfoCancelRequested();
 
+    UFUNCTION()
+    void HandleNickNameTextChanged(const FText& NewText);
+
+    UFUNCTION()
+    void HandleSelectNickNameClicked();
+
     bool CheckPlayerState();
 
     void StartMoveTo(const FVector2D& TargetPos);
     void ApplyPosition(const FVector2D& NewPos);
     void SetReadyState(ETitleReadyState NewState);
+    void UpdateSelectNickNameEnabled();
 private:
 
     bool bIsMoving = false;

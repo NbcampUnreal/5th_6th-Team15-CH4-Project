@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "CommonUserWidget.h"
@@ -28,7 +28,6 @@ public:
 
 protected:
     virtual void NativeOnInitialized() override;
-
 protected:
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<UImage> SkillImage;

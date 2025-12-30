@@ -27,6 +27,7 @@ void ALobbyPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(ThisClass, TeamID);
 	DOREPLIFETIME(ThisClass, MatchWaitTime);
 	DOREPLIFETIME(ThisClass, PlayerNumberId);
+	DOREPLIFETIME(ThisClass, PlayerNickName);
 }
 
 void ALobbyPlayerState::CopyProperties(APlayerState* PlayerState)
@@ -39,6 +40,7 @@ void ALobbyPlayerState::CopyProperties(APlayerState* PlayerState)
 		UE_LOG(LogTemp, Log, TEXT("[CopyProperties] Name : %s, CharacterID : %d, TeamID : %d!"), *GetPlayerName(), CharacterID, TeamID);
 		TargetPS->SetCharID(CharacterID);
 		TargetPS->SetTeamID(TeamID);
+		TargetPS->SetPlayerNickName(PlayerNickName);
 	}
 }
 
@@ -88,6 +90,25 @@ void ALobbyPlayerState::ServerSetTeamID_Implementation(int32 NewTeamID)
 	TeamID = NewTeamID;
 
 	OnRep_TeamID();
+}
+
+
+void ALobbyPlayerState::ServerSetNickName_Implementation(const FString& NewNickName)
+{
+	FString Str = NewNickName;
+	Str.TrimStartAndEndInline();
+
+	if (Str.IsEmpty())
+		return;
+
+	Str = Str.Left(12);
+
+	if (PlayerNickName == Str)
+		return;
+
+	PlayerNickName = Str;
+
+	OnRep_PlayerNickName();
 }
 
 void ALobbyPlayerState::SetPlayerNumberId(int32 NewID)
@@ -146,6 +167,14 @@ void ALobbyPlayerState::OnRep_MatchWaitTime()
 	if (OnMatchTimeChanged.IsBound())
 	{
 		OnMatchTimeChanged.Broadcast(MatchWaitTime);
+	}
+}
+
+void ALobbyPlayerState::OnRep_PlayerNickName()
+{
+	if (OnNickNameChanged.IsBound())
+	{
+		OnNickNameChanged.Broadcast(PlayerNickName);
 	}
 }
 
