@@ -11,6 +11,7 @@
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "AbilitySystemBlueprintLibrary.h"
 
 UGA_SkillE_Greystone::UGA_SkillE_Greystone()
 {
@@ -41,7 +42,10 @@ void UGA_SkillE_Greystone::ActivateAbility(
 	}
 
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
-	ASC->AddLooseGameplayTag(FGameplayTag::RequestGameplayTag(FName("Character.State.Attaking")));
+	if (IsValid(ASC))
+	{
+		ASC->AddLooseGameplayTag(FGameplayTag::RequestGameplayTag(FName("Character.State.Attaking")));
+	}
 
 	if (HasAuthority(&ActivationInfo))
 	{
@@ -101,6 +105,12 @@ void UGA_SkillE_Greystone::EndAbility(
 		StopAura();
 	}
 
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+	if (IsValid(ASC))
+	{
+		ASC->RemoveLooseGameplayTag(FGameplayTag::RequestGameplayTag(FName("Character.State.Attaking")));
+	}
+
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
@@ -112,7 +122,10 @@ void UGA_SkillE_Greystone::OnHitResultEvent(const FGameplayEventData Payload)
 void UGA_SkillE_Greystone::OnMontageCompleted()
 {
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
-	ASC->RemoveLooseGameplayTag(FGameplayTag::RequestGameplayTag(FName("Character.State.Attaking")));
+	if (IsValid(ASC))
+	{
+		ASC->RemoveLooseGameplayTag(FGameplayTag::RequestGameplayTag(FName("Character.State.Attaking")));
+	}
 }
 
 void UGA_SkillE_Greystone::OnMontageInterrupted()
