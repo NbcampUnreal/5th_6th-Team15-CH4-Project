@@ -48,8 +48,10 @@ void UConnectSubsystem::OnLoginComplete(int32 LocalUserNum, bool bWasSuccessful,
 	if (bWasSuccessful)
 	{
 		UE_LOG(LogTemp, Log, TEXT("[ConnectSubsystem] Login Success! UserNetId: %s"), *UserId.ToString());
-
 		bIsLoggedIn = true;
+
+		FindAndJoinSession();
+
 		if (OnLoginSuccessDelegate.IsBound())
 		{
 			OnLoginSuccessDelegate.Broadcast();
@@ -143,14 +145,12 @@ void UConnectSubsystem::FindAndJoinSession()
 		}
 
 		SessionSearch = MakeShareable(new FOnlineSessionSearch());
-
-		SessionSearch->bIsLanQuery = false;   // 스팀/EOS 외부 연결용
-		//SessionSearch->bIsLanQuery = true; // LAN 테스트용
-
+		SessionSearch->bIsLanQuery = false;
 		SessionSearch->MaxSearchResults = 20000;
-		//SessionSearch->QuerySettings.Set(FName("SEARCH_PRESENCE"), true, EOnlineComparisonOp::Equals);
 
-		//SessionSearch->QuerySettings.Set(FName("MatchType"), FString("FreeForAll"), EOnlineComparisonOp::Equals);
+		SessionSearch->QuerySettings.Set(FName("SEARCH_PRESENCE"), false, EOnlineComparisonOp::Equals);
+
+		SessionSearch->QuerySettings.Set(FName("SEARCH_PRESENCE"), true, EOnlineComparisonOp::Equals);
 
 		SessionInterface->AddOnFindSessionsCompleteDelegate_Handle(FOnFindSessionsCompleteDelegate::CreateUObject(this, &UConnectSubsystem::OnFindSessionsComplete));
 
@@ -201,11 +201,8 @@ void UConnectSubsystem::TravelToGame()
 
 	FString Url = GameLevelPath;
 
-	Url += TEXT("?listen");
-
 	UE_LOG(LogTemp, Log, TEXT("[ConnectSubsystem] Starting Game... Traveling to: %s"), *Url);
 
-	// 이동!
 	World->ServerTravel(Url);
 }
 
