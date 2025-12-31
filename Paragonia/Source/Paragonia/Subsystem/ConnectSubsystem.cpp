@@ -92,7 +92,7 @@ void UConnectSubsystem::CreateGameSession()
 		Settings.NumPublicConnections = 10; // 최대 인원
 		Settings.bShouldAdvertise = true;   // 검색 허용
 		Settings.bUsesPresence = false;     // 데디 서버는 플레이어가 아니므로 Presence(상태) 없음
-		Settings.bUseLobbiesIfAvailable = true;
+		Settings.bUseLobbiesIfAvailable = false;
 		Settings.bAllowJoinInProgress = true;
 
 		// 매치 타입 태그 (클라이언트가 이걸로 검색함)
