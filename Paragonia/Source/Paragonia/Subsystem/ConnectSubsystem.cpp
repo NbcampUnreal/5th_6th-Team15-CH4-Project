@@ -150,7 +150,7 @@ void UConnectSubsystem::FindAndJoinSession()
 
 		SessionSearch->QuerySettings.Set(FName("SEARCH_PRESENCE"), false, EOnlineComparisonOp::Equals);
 
-		SessionSearch->QuerySettings.Set(FName("SEARCH_PRESENCE"), true, EOnlineComparisonOp::Equals);
+		//SessionSearch->QuerySettings.Set(FName("SEARCH_PRESENCE"), true, EOnlineComparisonOp::Equals);
 
 		SessionInterface->AddOnFindSessionsCompleteDelegate_Handle(FOnFindSessionsCompleteDelegate::CreateUObject(this, &UConnectSubsystem::OnFindSessionsComplete));
 
