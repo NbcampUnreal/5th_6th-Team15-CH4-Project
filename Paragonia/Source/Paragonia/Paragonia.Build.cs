@@ -41,9 +41,7 @@ public class Paragonia : ModuleRules
 			// OSS
 			"OnlineSubsystem",
             "OnlineSubsystemUtils",
-            "OnlineSubsystemSteam",
             "OnlineSubsystemEOS",
-            "OnlineSubsystemEOSPlus"
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

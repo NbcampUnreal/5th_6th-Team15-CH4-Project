@@ -30,8 +30,15 @@ void UConnectSubsystem::Login()
 		IOnlineIdentityPtr Identity = Subsystem->GetIdentityInterface();
 		if (Identity.IsValid())
 		{
+			FOnlineAccountCredentials Credentials;
+
+			Credentials.Type = TEXT("AccountPortal");
+			Credentials.Id = TEXT("");
+			Credentials.Token = TEXT("");
+
 			Identity->AddOnLoginCompleteDelegate_Handle(0, FOnLoginCompleteDelegate::CreateUObject(this, &UConnectSubsystem::OnLoginComplete));
-			Identity->AutoLogin(0);
+
+			Identity->Login(0, Credentials);
 		}
 	}
 }
