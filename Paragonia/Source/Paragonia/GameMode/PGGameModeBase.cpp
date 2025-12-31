@@ -10,9 +10,9 @@
 #include "Controller/PGPlayerController.h"
 #include "EngineUtils.h"
 #include "Object/PGNexus.h"
-#include "Character/PGPlayerCharacterBase.h"
 #include "PlayerStart/PGPlayerStart.h"
 #include "Subsystem/ConnectSubsystem.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 APGGameModeBase::APGGameModeBase()
 {
@@ -425,6 +425,24 @@ void APGGameModeBase::OnObjectiveDestroyed(AActor* DestroyedActor)
     else
     {
         bGameOver = false;
+    }
+
+    for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+    {
+        if (APlayerController* PC = It->Get())
+        {
+            if (ACharacter* Char = Cast<ACharacter>(PC->GetPawn()))
+            {
+                PC->SetIgnoreMoveInput(true);
+                PC->SetIgnoreLookInput(true);
+
+                if (UCharacterMovementComponent* Move = Char->GetCharacterMovement())
+                {
+                    Move->StopMovementImmediately();
+                    Move->DisableMovement();
+                }
+            }
+        }
     }
 
     GetWorld()->GetTimerManager().SetTimer(

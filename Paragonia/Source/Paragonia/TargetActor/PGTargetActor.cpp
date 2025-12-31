@@ -28,8 +28,17 @@ void APGTargetActor::ConfirmTargetingAndContinue()
 		FGameplayAbilityTargetDataHandle DataHandle;
 		if (bHit)
 		{
+			TSet<AActor*> UniqueActors;
+
 			for (const FHitResult& Hit : OutHitResults)
 			{
+				AActor* HitActor = Hit.GetActor();
+				if (!IsValid(HitActor) || UniqueActors.Contains(HitActor))
+				{
+					continue;
+				}
+
+				UniqueActors.Add(HitActor);
 				DataHandle.Add(new FGameplayAbilityTargetData_SingleTargetHit(Hit));
 			}
 		}

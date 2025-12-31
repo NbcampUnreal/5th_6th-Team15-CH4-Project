@@ -162,8 +162,8 @@ void UGA_SkillQ_Aurora::OnDashStartEvent(const FGameplayEventData Payload)
 	FHitResult Hit;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(DashGround), false, Character);
 
-	const FVector TraceStart = TargetLocation + FVector(0, 0, 2000.f);
-	const FVector TraceEnd = TargetLocation - FVector(0, 0, 2000.f);
+	const FVector TraceStart = TargetLocation + FVector(0, 0, 1000.f);
+	const FVector TraceEnd = TargetLocation - FVector(0, 0, 1000.f);
 
 	if (Character->GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, Params))
 	{
