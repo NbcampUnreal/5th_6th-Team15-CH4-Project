@@ -10,6 +10,6 @@ set ServerMap="/Game/Paragonia/Maps/Lobby"
 :: -server: 데디케이티드 서버 모드
 :: -log: 로그 창 띄우기
 :: -game: 에디터가 아닌 게임 모드로 실행 (중요)
-%UE5Editor% %MyProject% %ServerMap% -server -game -log
+%UE5Editor% %MyProject% %ServerMap% -server -game -log -EpicApp=ParagoniaServer
 
 pause
