@@ -30,8 +30,21 @@ void UConnectSubsystem::Login()
 		IOnlineIdentityPtr Identity = Subsystem->GetIdentityInterface();
 		if (Identity.IsValid())
 		{
-			FOnlineAccountCredentials Credentials;
+			ELoginStatus::Type Status = Identity->GetLoginStatus(0);
 
+			// 1. 이미 로그인이 되어 있다면? -> 바로 성공 처리하고 다음 단계로!
+			if (Status == ELoginStatus::LoggedIn)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("[ConnectSubsystem] Already Logged In! Skipping Login Process."));
+
+				// 수동으로 '로그인 완료' 함수를 호출해서 다음 로직(세션 찾기 등)이 실행되게 합니다.
+				FUniqueNetIdPtr UserId = Identity->GetUniquePlayerId(0);
+				OnLoginComplete(0, true, *UserId, TEXT("AlreadyLoggedIn"));
+				return;
+			}
+
+			// 2. 로그인이 안 되어 있다면? -> 원래대로 로그인 시도
+			FOnlineAccountCredentials Credentials;
 			Credentials.Type = TEXT("AccountPortal");
 			Credentials.Id = TEXT("");
 			Credentials.Token = TEXT("");
