@@ -194,12 +194,15 @@ void UConnectSubsystem::FindAndJoinSession()
 		}
 
 		SessionSearch = MakeShareable(new FOnlineSessionSearch());
+
 		SessionSearch->bIsLanQuery = false;
-		SessionSearch->MaxSearchResults = 20000;
+		SessionSearch->QuerySettings.Set(FName("SEARCH_LOBBIES"), false, EOnlineComparisonOp::Equals);
+
+		SessionSearch->MaxSearchResults = 100;
 
 		SessionSearch->QuerySettings.Set(FName("SEARCH_PRESENCE"), false, EOnlineComparisonOp::Equals);
 
-		//SessionSearch->QuerySettings.Set(FName("MatchType"), FString("FreeForAll"), EOnlineComparisonOp::Equals);
+		SessionSearch->QuerySettings.Set(FName("MatchType"), FString("FreeForAll"), EOnlineComparisonOp::Equals);
 
 		SessionInterface->AddOnFindSessionsCompleteDelegate_Handle(FOnFindSessionsCompleteDelegate::CreateUObject(this, &UConnectSubsystem::OnFindSessionsComplete));
 
