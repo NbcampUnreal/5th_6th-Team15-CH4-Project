@@ -11,7 +11,7 @@ void UConnectSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	if (GetGameInstance()->IsDedicatedServerInstance())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[ConnectSubsystem] I am Dedicated Server. Creating Session..."));
-		CreateGameSession();
+		LoginDedicatedServer();
 	}
 	else
 	{
