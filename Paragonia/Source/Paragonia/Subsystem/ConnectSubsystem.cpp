@@ -27,6 +27,9 @@ void UConnectSubsystem::Login()
 	IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
 	if (Subsystem)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("[OSS] Subsystem=%s"),
+			Subsystem ? *Subsystem->GetSubsystemName().ToString() : TEXT("NULL"));
+
 		IOnlineIdentityPtr Identity = Subsystem->GetIdentityInterface();
 		if (Identity.IsValid())
 		{
@@ -85,6 +88,9 @@ void UConnectSubsystem::CreateGameSession()
 	IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
 	if (!Subsystem) return;
 
+	UE_LOG(LogTemp, Warning, TEXT("[OSS] Subsystem=%s"),
+		Subsystem ? *Subsystem->GetSubsystemName().ToString() : TEXT("NULL"));
+
 	IOnlineSessionPtr SessionInterface = Subsystem->GetSessionInterface();
 	if (SessionInterface.IsValid())
 	{
@@ -107,6 +113,7 @@ void UConnectSubsystem::CreateGameSession()
 		Settings.bUsesPresence = false;     // 데디 서버는 플레이어가 아니므로 Presence(상태) 없음
 		Settings.bUseLobbiesIfAvailable = false;
 		Settings.bAllowJoinInProgress = true;
+		Settings.bAllowJoinViaPresence = false;
 
 		// 매치 타입 태그 (클라이언트가 이걸로 검색함)
 		Settings.Set(FName("MatchType"), FString("FreeForAll"), EOnlineDataAdvertisementType::ViaOnlineService);
@@ -122,6 +129,21 @@ void UConnectSubsystem::OnCreateSessionComplete(FName SessionName, bool bWasSucc
 	{
 		// 서버는 이미 맵을 로드하고 있으므로 이동(Travel) 불필요
 		UE_LOG(LogTemp, Warning, TEXT("[ConnectSubsystem] SERVER SESSION CREATED! Ready for clients."));
+
+		IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
+		if (!Subsystem) 
+			return;
+
+		IOnlineSessionPtr SessionInterface = Subsystem->GetSessionInterface();
+
+		auto Named = SessionInterface->GetNamedSession(FName("MySession"));
+		if (Named)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[Server] State=%d ShouldAdvertise=%d NumPublic=%d"),
+				(int32)Named->SessionState,
+				(int32)Named->SessionSettings.bShouldAdvertise,
+				Named->SessionSettings.NumPublicConnections);
+		}
 	}
 	else
 	{
