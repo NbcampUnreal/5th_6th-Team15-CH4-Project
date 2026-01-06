@@ -1,10 +1,9 @@
 @echo off
 set UE5Editor="D:\UE_5.6\Engine\Binaries\Win64\UnrealEditor.exe"
 set MyProject="D:\Unreal_Projects\Chap4_TeamPro\Paragonia\Paragonia.uproject"
-set ServerMap="/Game/Paragonia/Maps/Lobby.Lobby"
 
-%UE5Editor% %MyProject% %ServerMap% -server -game -log ^
--ini:Engine:[/Script/OnlineSubsystemEOS.EOSSettings]:DefaultArtifactName=ParagoniaServer
+%UE5Editor% %MyProject% %ClientMap% -game -log ^
+-EpicApp=ParagoniaClient ^
 -LogOnline=VeryVerbose -LogOnlineSession=VeryVerbose -LogEOSSDK=VeryVerbose
 
 pause
