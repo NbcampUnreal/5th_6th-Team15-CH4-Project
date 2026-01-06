@@ -24,10 +24,6 @@ public:
 
 	void Login();
 
-	void LoginDedicatedServer();
-
-	void OnDedicatedServerLoginComplete(int32 LocalUserNum, bool bWasSuccessful, const FUniqueNetId& UserId, const FString& Error);
-
 	void CreateGameSession();
 
 	UFUNCTION(BlueprintCallable, Category = "Network|Client")

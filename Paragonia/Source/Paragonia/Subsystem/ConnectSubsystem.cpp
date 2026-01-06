@@ -11,7 +11,7 @@ void UConnectSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	if (GetGameInstance()->IsDedicatedServerInstance())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[ConnectSubsystem] I am Dedicated Server. Creating Session..."));
-		LoginDedicatedServer();
+		CreateGameSession();
 	}
 	else
 	{
@@ -54,42 +54,6 @@ void UConnectSubsystem::Login()
 			Identity->Login(0, Credentials);
 		}
 	}
-}
-
-void UConnectSubsystem::LoginDedicatedServer()
-{
-	IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
-	if (!Subsystem) return;
-
-	IOnlineIdentityPtr Identity = Subsystem->GetIdentityInterface();
-	if (!Identity.IsValid()) return;
-
-	Identity->AddOnLoginCompleteDelegate_Handle(
-		0, FOnLoginCompleteDelegate::CreateUObject(this, &UConnectSubsystem::OnDedicatedServerLoginComplete));
-
-	// 1) 가장 먼저 AutoLogin 시도 (INI 기반으로 알아서 잡히는 경우가 많음)
-	if (!Identity->AutoLogin(0))
-	{
-		// 2) AutoLogin이 false면 Credentials로 시도 (프로젝트/버전에 따라 다름)
-		FOnlineAccountCredentials Credentials;
-		Credentials.Type = TEXT("ClientCredentials"); // 또는 개발 중이면 "Developer"
-		Credentials.Id = TEXT("");
-		Credentials.Token = TEXT("");
-
-		Identity->Login(0, Credentials);
-	}
-}
-
-void UConnectSubsystem::OnDedicatedServerLoginComplete(int32 LocalUserNum, bool bWasSuccessful, const FUniqueNetId& UserId, const FString& Error)
-{
-	if (!bWasSuccessful)
-	{
-		UE_LOG(LogTemp, Error, TEXT("[ConnectSubsystem] Dedicated Server Login Failed: %s"), *Error);
-		return;
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("[ConnectSubsystem] Dedicated Server Login Success: %s"), *UserId.ToString());
-	CreateGameSession();
 }
 
 void UConnectSubsystem::OnLoginComplete(int32 LocalUserNum, bool bWasSuccessful, const FUniqueNetId& UserId, const FString& Error)
@@ -171,7 +135,7 @@ void UConnectSubsystem::OnCreateSessionComplete(FName SessionName, bool bWasSucc
 void UConnectSubsystem::FindAndJoinSession()
 {
 	IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
-	if (!Subsystem) 
+	if (!Subsystem)
 		return;
 
 	IOnlineSessionPtr SessionInterface = Subsystem->GetSessionInterface();
@@ -194,11 +158,8 @@ void UConnectSubsystem::FindAndJoinSession()
 		}
 
 		SessionSearch = MakeShareable(new FOnlineSessionSearch());
-
 		SessionSearch->bIsLanQuery = false;
-		SessionSearch->QuerySettings.Set(FName("SEARCH_LOBBIES"), false, EOnlineComparisonOp::Equals);
-
-		SessionSearch->MaxSearchResults = 100;
+		SessionSearch->MaxSearchResults = 20000;
 
 		SessionSearch->QuerySettings.Set(FName("SEARCH_PRESENCE"), false, EOnlineComparisonOp::Equals);
 
