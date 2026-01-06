@@ -110,8 +110,20 @@ void UPG_PlayerUIComponent::BindHeadHPDelegatesOnce()
 	}
 
 	HeadHPWidget->BindToAttributeSet(CharacterAttributeSet);
-
 	bHeadHPBound = true;
+	//APGPlayerState* PGPS = OwnerCharacter->GetPlayerState<APGPlayerState>();
+	//if (!PGPS)
+	//{
+	//	return;
+	//}
+
+	//UPGInventoryComponent* InventoryConponent = PGPS->GetInventoryComponent();
+	//if (!InventoryConponent)
+	//{
+	//	return;
+	//}
+
+	//HeadHPWidget->InitInventory(InventoryConponent);
 }
 
 void UPG_PlayerUIComponent::UpdateHeadHPVisibility()

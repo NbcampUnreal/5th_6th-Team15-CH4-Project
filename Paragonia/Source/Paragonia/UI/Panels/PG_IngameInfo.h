@@ -10,6 +10,7 @@ class UPG_HPBar;
 class UTextBlock;
 class UCharacterAttributeSet;
 class UPGInventorySlotWidget;
+class UPGInventoryComponent;
 /**
  * 
  */
@@ -33,6 +34,14 @@ public:
 	UFUNCTION()
 	void HandleMaxHealthChanged(float OldValue, float NewValue);
 
+	UFUNCTION()
+	void InitInventory(UPGInventoryComponent* InInventoryComponent);
+
+	UFUNCTION()
+	void UnbindInventory();
+
+	UFUNCTION()
+	void RefreshAll();
 protected:
 	virtual void NativeDestruct() override;
 
@@ -47,25 +56,27 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> PlayerName;
 
-	//UPROPERTY(meta = (BindWidget))
-	//TObjectPtr<UPGInventorySlotWidget> Item0;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPGInventorySlotWidget> Item0;
 
-	//UPROPERTY(meta = (BindWidget))
-	//TObjectPtr<UPGInventorySlotWidget> Item1;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPGInventorySlotWidget> Item1;
 
-	//UPROPERTY(meta = (BindWidget))
-	//TObjectPtr<UPGInventorySlotWidget> Item2;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPGInventorySlotWidget> Item2;
 
-	//UPROPERTY(meta = (BindWidget))
-	//TObjectPtr<UPGInventorySlotWidget> Item3;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPGInventorySlotWidget> Item3;
 
-	//UPROPERTY(meta = (BindWidget))
-	//TObjectPtr<UPGInventorySlotWidget> Item4;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPGInventorySlotWidget> Item4;
 
-	//UPROPERTY(meta = (BindWidget))
-	//TObjectPtr<UPGInventorySlotWidget> Item5;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPGInventorySlotWidget> Item5;
 private:
 	UPROPERTY()
 	TObjectPtr<UCharacterAttributeSet> BoundAttrSet;
 
+	UPROPERTY()
+	TObjectPtr<UPGInventoryComponent> InventoryComponent;
 };

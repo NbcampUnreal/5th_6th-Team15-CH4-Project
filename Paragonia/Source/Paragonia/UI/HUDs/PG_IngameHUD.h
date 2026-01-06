@@ -14,6 +14,11 @@ class UTextureRenderTarget2D;
 class UCharacterAttributeSet;
 class UWidgetAnimation;
 class UChatWidget;
+class UPGInventorySlotWidget;
+class UPG_KillLog;
+class UTextBlock;
+class APGPlayerState;
+
 
 UCLASS()
 class PARAGONIA_API UPG_IngameHUD : public UCommonUserWidget
@@ -45,10 +50,27 @@ public:
 	UFUNCTION()
 	void HandleCooldownTagChanged(FGameplayTag CooldownTag, int32 NewCount);
 
+	UFUNCTION()
+	void InitInventory(UPGInventoryComponent* InInventoryComponent);
+
+	UFUNCTION()
+	void UnbindInventory();
+
+	UFUNCTION()
+	void RefreshAll();
+
+	UFUNCTION()
+	void OnKillEvent(APGPlayerState* ClientPS, class APGPlayerState* KillerPS, class APGPlayerState* VictimPS);
+
+	void InitGold(APGPlayerState* InPS);
+
 protected:
 	virtual void NativeOnInitialized() override;
-
+	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
+
+	UFUNCTION()
+	void HandleGoldChange(int32 NewGold);
 private:
 	void BindCooldownToSkillIcon();
 
@@ -83,6 +105,43 @@ protected:
 	UPROPERTY(Transient, meta = (BindWidgetAnim))
 	TObjectPtr<UWidgetAnimation> OnDamaged;
 
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPGInventorySlotWidget> Item0;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPGInventorySlotWidget> Item1;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPGInventorySlotWidget> Item2;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPGInventorySlotWidget> Item3;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPGInventorySlotWidget> Item4;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPGInventorySlotWidget> Item5;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPG_KillLog> KillLog0;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPG_KillLog> KillLog1;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPG_KillLog> KillLog2;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPG_KillLog> KillLog3;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPG_KillLog> KillLog4;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPG_KillLog> KillLog5;
+
+	UFUNCTION()
+	void InitKillLogSlots();
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	UTextBlock* GoldText;
+
 private:
 	TMap<FGameplayTag, TObjectPtr<UPG_SkillIcon>> CooldownTagToWidget;
 
@@ -95,6 +154,16 @@ private:
 	UPROPERTY()
 	TMap<EHPBarSlot, TObjectPtr<UPG_AttrSetBindProxy>> BindProxies;
 
+	UPROPERTY(Transient)
+	TArray<TObjectPtr<UPG_KillLog>> KillLogSlots;
+
+	UPROPERTY()
+	TMap<int32, TObjectPtr<UPG_KillLog>> KillLogMap;
+
+	UPROPERTY()
+	TObjectPtr<UPGInventoryComponent> InventoryComponent;
+
+	UPG_KillLog* GetOrAssignSlot(int32 PlayerId);
 #pragma region Chatting
 
 protected:
@@ -103,7 +172,6 @@ protected:
 
 public:
 	void PrintChatMessageString(const FString& PlayerName, const FString& InChatMessageString, const int32& InTeamID);
-
 #pragma endregion
 
 };

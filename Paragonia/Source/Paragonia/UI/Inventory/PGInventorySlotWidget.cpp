@@ -45,18 +45,20 @@ void UPGInventorySlotWidget::SetSelected(bool bIsSelected)
     }
 }
 
-void UPGInventorySlotWidget::Refresh()
+bool UPGInventorySlotWidget::Refresh()
 {
+    bool Ret = false;
+
     if (!Inventory || SlotIndex == INDEX_NONE)
     {
         SetEmptyVisual();
-        return;
+        return Ret;
     }
 
     if (!Inventory->Slots.IsValidIndex(SlotIndex))
     {
         SetEmptyVisual();
-        return;
+        return Ret;
     }
 
     const FInventorySlot& InvSlot = Inventory->Slots[SlotIndex];
@@ -77,6 +79,7 @@ void UPGInventorySlotWidget::Refresh()
                 {
                     IconImage->SetBrushFromTexture(IconTex);
                     IconImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+                    Ret = true;
                 }
                 else
                 {
@@ -108,12 +111,13 @@ void UPGInventorySlotWidget::Refresh()
             IconImage->SetVisibility(ESlateVisibility::Hidden);
         }
     }
-
     if (CountText)
     {
         CountText->SetText(FText::AsNumber(InvSlot.Count));
         CountText->SetVisibility(InvSlot.Count > 1 ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
     }
+
+    return Ret;
 }
 
 void UPGInventorySlotWidget::SetEmptyVisual()

@@ -38,5 +38,5 @@ protected:
 
 private:
 	bool bIsMovingToTarget = false;
-	float ArriveTolerance = 5.f;   // 오차 허용
+	float ArriveTolerance = 20.f;   // 오차 허용
 };

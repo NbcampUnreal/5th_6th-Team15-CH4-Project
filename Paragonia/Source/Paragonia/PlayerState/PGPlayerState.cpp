@@ -26,6 +26,7 @@ void APGPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(APGPlayerState, bClientReady);
 	DOREPLIFETIME(APGPlayerState, Gold);
 	DOREPLIFETIME(APGPlayerState, PlayerNickName);
+	DOREPLIFETIME(APGPlayerState, PlayerNumberId);
 }
 
 void APGPlayerState::SetCharID(int32 NewCharID)
@@ -43,6 +44,10 @@ void APGPlayerState::SetPlayerNickName(const FString& NewPlayerNickName)
 	this->PlayerNickName = NewPlayerNickName;
 }
 
+void APGPlayerState::SetPlayerNumberId(int32 NewPlayerNumberId)
+{
+	this->PlayerNumberId = NewPlayerNumberId;
+}
 void APGPlayerState::OnRep_Gold()
 {
 	OnGoldChanged.Broadcast(Gold);

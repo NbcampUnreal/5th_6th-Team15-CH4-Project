@@ -253,6 +253,17 @@ bool APGPlayerController::BindIngameHUD()
     return true;
 }
 
+void APGPlayerController::Client_KillInfo_Implementation(APGPlayerState* KillerPS, APGPlayerState* VictimPS)
+{
+    APGPlayerState* LocalPS = GetPlayerState<APGPlayerState>();
+    if (!IsValid(LocalPS))
+    {
+        return;
+    }
+
+    IngameHUD->OnKillEvent(LocalPS, KillerPS, VictimPS);
+}
+
 bool APGPlayerController::SetMyHPBar(APGPlayerState* LocalPS)
 {
     APGPlayerCharacterBase* FoundMyCharacter = LocalPS->GetPawn<APGPlayerCharacterBase>();
@@ -278,8 +289,17 @@ bool APGPlayerController::SetMyHPBar(APGPlayerState* LocalPS)
         return false;
     }
 
+    APGPlayerState* MyPS = Cast<APGPlayerState>(PlayerState);
+    if (!MyPS)
+    {
+        return false;
+    }
+
     IngameHUD->BindSlot(EHPBarSlot::Player, MyAttributeSet);
+    //IngameHUD->InitInventory(MyPS->GetInventoryComponent());
     IngameHUD->InitMinimap(FoundMyCharacter->GetMinimapRenderTarget());
+
+    IngameHUD->InitGold(MyPS);
 
     return true;
 }

@@ -23,7 +23,7 @@ class PARAGONIA_API UPGInventorySlotWidget : public UUserWidget
 public:
     void Init(UPGInventoryComponent* InInventory, int32 InSlotIndex);
 
-    void Refresh();
+    bool Refresh();
 
     void SetSelected(bool bIsSelected);
 

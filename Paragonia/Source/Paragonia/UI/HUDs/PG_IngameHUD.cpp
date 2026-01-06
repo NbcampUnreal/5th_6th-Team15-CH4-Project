@@ -11,6 +11,11 @@
 #include "UI/MiniMap/PG_MiniMap.h"
 #include "AttributeSet/CharacterAttributeSet.h"
 #include "UI/Chatting/ChatWidget.h"
+#include "UI/Inventory/PGInventorySlotWidget.h"
+#include "Inventory/PGInventoryComponent.h"
+#include "UI/Panels/PG_KillLog.h"
+#include "PlayerState/PGPlayerState.h"
+#include "Components/TextBlock.h"
 
 void UPG_IngameHUD::NativeOnInitialized()
 {
@@ -25,6 +30,78 @@ void UPG_IngameHUD::NativeOnInitialized()
 	BindCooldownToSkillIcon();
 }
 
+void UPG_IngameHUD::NativeConstruct()
+{
+    Super::NativeConstruct();
+    InitKillLogSlots();
+}
+
+void UPG_IngameHUD::InitKillLogSlots()
+{
+    KillLogSlots = { KillLog0, KillLog1, KillLog2, KillLog3, KillLog4, KillLog5 };
+    KillLogMap.Empty();
+
+    for (UPG_KillLog* KillLog : KillLogSlots)
+    {
+        if (!IsValid(KillLog))
+        {
+            continue;
+        }
+        KillLog->ResetSlot();
+        KillLog->SetVisibility(ESlateVisibility::Hidden);
+    }
+}
+
+UPG_KillLog* UPG_IngameHUD::GetOrAssignSlot(int32 PlayerId)
+{
+    if (PlayerId == INDEX_NONE)
+    {
+        return nullptr;
+    }
+
+    if (TObjectPtr<UPG_KillLog>* Found = KillLogMap.Find(PlayerId))
+    {
+        return Found->Get();
+    }
+
+    for (UPG_KillLog* KillLog : KillLogSlots)
+    {
+        if (!IsValid(KillLog))
+        {
+            continue;
+        }
+
+        const bool bUsed = KillLogMap.FindKey(KillLog) != nullptr;
+        if (bUsed)
+        {
+            continue;
+        }
+
+        KillLogMap.Add(PlayerId, KillLog);
+        return KillLog;
+    }
+
+    return nullptr;
+}
+
+
+void UPG_IngameHUD::OnKillEvent(APGPlayerState* ClientPS, APGPlayerState* KillerPS, APGPlayerState* VictimPS)
+{
+    if (!IsValid(ClientPS))
+    {
+        return;
+    }
+
+    if (IsValid(VictimPS))
+    {
+        const int32 VictimId = VictimPS->GetPlayerId();
+        if (UPG_KillLog* Log = GetOrAssignSlot(VictimId))
+        {
+            Log->InitIfNeeded(ClientPS, VictimPS);
+            Log->ShowKillLog(KillerPS);
+        }
+    }
+}
 void UPG_IngameHUD::NativeDestruct()
 {
     for (auto& Pair : BindProxies)
@@ -37,7 +114,7 @@ void UPG_IngameHUD::NativeDestruct()
     BindProxies.Empty();
     BoundAttrSets.Empty();
     HPBars.Empty();
-
+    UnbindInventory();
     Super::NativeDestruct();
 }
 
@@ -181,6 +258,93 @@ void UPG_IngameHUD::BindCooldownToSkillIcon()
 	PlayerCharacter->OnCooldownTagChangedDelegate.AddDynamic(this, &ThisClass::HandleCooldownTagChanged);
 }
 
+void UPG_IngameHUD::InitInventory(UPGInventoryComponent* InInventoryComponent)
+{
+    if (InventoryComponent != InInventoryComponent)
+    {
+        UnbindInventory();
+    }
+
+    if (!IsValid(InInventoryComponent))
+    {
+        return;
+    }
+
+    InventoryComponent = InInventoryComponent;
+
+    UPGInventorySlotWidget* Items[] = { Item0, Item1, Item2, Item3, Item4, Item5 };
+
+    int index = 0;
+
+    for (UPGInventorySlotWidget* Item : Items)
+    {
+        if (!IsValid(Item))
+        {
+            continue;
+        }
+
+        Item->Init(InInventoryComponent, index++);
+        Item->SetVisibility(ESlateVisibility::Hidden);
+    }
+
+    InventoryComponent->OnInventoryChanged.RemoveAll(this);
+    InventoryComponent->OnInventoryChanged.AddUObject(this, &UPG_IngameHUD::RefreshAll);
+
+    RefreshAll();
+
+}
+
+void UPG_IngameHUD::RefreshAll()
+{
+    UPGInventorySlotWidget* Items[] = { Item0, Item1, Item2, Item3, Item4, Item5 };
+
+    for (UPGInventorySlotWidget* Item : Items)
+    {
+        if (!IsValid(Item))
+        {
+            continue;
+        }
+
+        const bool bHasItem = Item->Refresh();
+        Item->SetVisibility(bHasItem ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+        if (bHasItem)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Init"));
+        }
+    }
+}
+
+void UPG_IngameHUD::UnbindInventory()
+{
+    if (IsValid(InventoryComponent))
+    {
+        InventoryComponent->OnInventoryChanged.RemoveAll(this);
+    }
+
+    InventoryComponent = nullptr;
+}
+
+void UPG_IngameHUD::HandleGoldChange(int32 NewGold)
+{
+    if (GoldText)
+    {
+        GoldText->SetText(FText::FromString(FString::Printf(TEXT("Gold: %d"), NewGold)));
+    }
+}
+
+void UPG_IngameHUD::InitGold(APGPlayerState* InPS)
+{
+    if (!IsValid(InPS))
+    {
+        return;
+    }
+
+    InPS->OnGoldChanged.RemoveAll(this);
+
+    InPS->OnGoldChanged.AddUObject(this, &UPG_IngameHUD::HandleGoldChange);
+
+    HandleGoldChange(InPS->GetGold());
+}
 
 #pragma region Chatting
 
